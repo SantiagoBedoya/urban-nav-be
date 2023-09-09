@@ -1,4 +1,8 @@
+import dotenv from 'dotenv';
 import {ApplicationConfig, UrbanNavBeApplication} from './application';
+
+// Load environment variables
+dotenv.config();
 
 export * from './application';
 
