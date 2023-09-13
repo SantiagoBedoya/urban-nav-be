@@ -1,31 +1,50 @@
 import {BindingScope, injectable} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
+import {UserRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
-  constructor() {} // TODO: inject user repository
+  constructor(
+    @repository(UserRepository)
+    private readonly userRepository: UserRepository,
+  ) {}
 
-  generateOTP(userId: string) {
-    // TODO: find user by id
+  async generateOTP(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new HttpErrors.NotFound('User not found');
+    }
 
     const secret = speakeasy.generateSecret({
-      name: 'UrbanNav:', // TODO: concatenate user email
+      name: 'UrbanNav:' + user.email,
     });
 
-    // TODO: update user with secret
+    await this.userRepository.updateById(user._id, {
+      secret2fa: secret.ascii,
+    });
 
     return {
       otpAuthURL: secret.otpauth_url,
     };
   }
 
-  validateOTP(userId: string, passcode: string) {
-    // TODO: find user by id
+  async validateOTP(userId: string, passcode: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new HttpErrors.NotFound('User not found');
+    }
+
+    if (!user.secret2fa) {
+      throw new HttpErrors.BadRequest('2FA was not configured');
+    }
+
+    const role = await this.userRepository.role(userId);
 
     const isValid = speakeasy.totp.verify({
-      secret: '', // TODO: set user secret
+      secret: user.secret2fa!,
       encoding: 'ascii',
       token: passcode,
     });
@@ -36,7 +55,9 @@ export class AuthService {
 
     const accessToken = jwt.sign(
       {
-        userId: '', // TODO: add user ID
+        userId: user._id,
+        roleId: role._id,
+        permission: role.permissions,
       },
       process.env.JWT_SECRET!,
     );
