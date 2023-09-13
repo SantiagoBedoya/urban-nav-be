@@ -19,12 +19,16 @@ import {
 } from '@loopback/rest';
 import {User} from '../models';
 import {UserRepository} from '../repositories';
-import bcrypt from 'bcrypt';
+import {service} from '@loopback/core';
+import {UsersService} from '../services';
+
 
 export class UserController {
   constructor(
     @repository(UserRepository)
     public userRepository : UserRepository,
+    @service(UsersService)
+    public userService : UsersService,
   ) {}
 
   @post('/users')
@@ -45,10 +49,7 @@ export class UserController {
     })
     user: Omit<User, '_id'>,
   ): Promise<User> {
-    const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(user.password, salt);
-
-    return this.userRepository.create({...user, password: hash});
+     return this.userService.createUser(user);
   }
 
   @get('/users/count')
