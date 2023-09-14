@@ -26,7 +26,7 @@ export class RoleController {
     public roleRepository : RoleRepository,
   ) {}
 
-  @post('/role')
+  @post('/roles')
   @response(200, {
     description: 'Role model instance',
     content: {'application/json': {schema: getModelSchemaRef(Role)}},
@@ -47,7 +47,7 @@ export class RoleController {
     return this.roleRepository.create(role);
   }
 
-  @get('/role/count')
+  @get('/roles/count')
   @response(200, {
     description: 'Role model count',
     content: {'application/json': {schema: CountSchema}},
@@ -58,7 +58,7 @@ export class RoleController {
     return this.roleRepository.count(where);
   }
 
-  @get('/role')
+  @get('/roles')
   @response(200, {
     description: 'Array of Role model instances',
     content: {
@@ -76,7 +76,7 @@ export class RoleController {
     return this.roleRepository.find(filter);
   }
 
-  @patch('/role')
+  @patch('/roles')
   @response(200, {
     description: 'Role PATCH success count',
     content: {'application/json': {schema: CountSchema}},
@@ -95,7 +95,7 @@ export class RoleController {
     return this.roleRepository.updateAll(role, where);
   }
 
-  @get('/role/{id}')
+  @get('/roles/{id}')
   @response(200, {
     description: 'Role model instance',
     content: {
@@ -111,7 +111,7 @@ export class RoleController {
     return this.roleRepository.findById(id, filter);
   }
 
-  @patch('/role/{id}')
+  @patch('/roles/{id}')
   @response(204, {
     description: 'Role PATCH success',
   })
@@ -129,7 +129,7 @@ export class RoleController {
     await this.roleRepository.updateById(id, role);
   }
 
-  @put('/role/{id}')
+  @put('/roles/{id}')
   @response(204, {
     description: 'Role PUT success',
   })
@@ -140,7 +140,7 @@ export class RoleController {
     await this.roleRepository.replaceById(id, role);
   }
 
-  @del('/role/{id}')
+  @del('/roles/{id}')
   @response(204, {
     description: 'Role DELETE success',
   })

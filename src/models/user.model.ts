@@ -20,7 +20,7 @@ export class User extends Entity {
     type: 'string',
     required: true
   })
-  lastName?: string;
+  lastName: string;
 
   @property({
     type: 'string',
@@ -36,15 +36,20 @@ export class User extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  photoURL: string;
+  photoURL?: string;
 
   @property({
     type: 'string',
-    required: true,
   })
-  secret2fa: string;
+  secret2fa?: string;
+
+  @property({
+    type: 'array',
+    itemType: 'object',
+    default: []
+  })
+  contacts?:object[];
 
   @belongsTo(() => Role)
   roleId: string;
