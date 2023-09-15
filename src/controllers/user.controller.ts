@@ -20,14 +20,19 @@ import {
 } from '@loopback/rest';
 import {Contacts, User} from '../models';
 import {UserRepository} from '../repositories';
+import {service} from '@loopback/core';
+import {UsersService} from '../services';
+
 
 export class UserController {
   constructor(
     @repository(UserRepository)
     public userRepository : UserRepository,
+    @service(UsersService)
+    public userService : UsersService,
   ) {}
 
-  @post('/user')
+  @post('/users')
   @response(200, {
     description: 'User model instance',
     content: {'application/json': {schema: getModelSchemaRef(User)}},
@@ -45,10 +50,10 @@ export class UserController {
     })
     user: Omit<User, '_id'>,
   ): Promise<User> {
-    return this.userRepository.create(user);
+     return this.userService.createUser(user);
   }
 
-  @get('/user/count')
+  @get('/users/count')
   @response(200, {
     description: 'User model count',
     content: {'application/json': {schema: CountSchema}},
@@ -59,7 +64,7 @@ export class UserController {
     return this.userRepository.count(where);
   }
 
-  @get('/user')
+  @get('/users')
   @response(200, {
     description: 'Array of User model instances',
     content: {
@@ -77,7 +82,7 @@ export class UserController {
     return this.userRepository.find(filter);
   }
 
-  @patch('/user')
+  @patch('/users')
   @response(200, {
     description: 'User PATCH success count',
     content: {'application/json': {schema: CountSchema}},
@@ -96,7 +101,7 @@ export class UserController {
     return this.userRepository.updateAll(user, where);
   }
 
-  @get('/user/{id}')
+  @get('/users/{id}')
   @response(200, {
     description: 'User model instance',
     content: {
@@ -112,7 +117,8 @@ export class UserController {
     return this.userRepository.findById(id, filter);
   }
 
-  @get('/user/{id}/contacts')
+
+  @get('/users/{id}/contacts')
   @response(200, {
     description: 'User contacts model instance',
     content: {
@@ -132,7 +138,7 @@ export class UserController {
     return user.contacts;
   }
 
-  @patch('/user/{id}')
+  @patch('/users/{id}')
   @response(204, {
     description: 'User PATCH success',
   })
@@ -150,7 +156,8 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
-  @patch('/user/{id}/contacts')
+
+  @patch('/users/{id}/contacts')
   @response(204, {
     description: 'User contacts PATCH success',
   })
@@ -173,7 +180,7 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
-  @put('/user/{id}')
+  @put('/users/{id}')
   @response(204, {
     description: 'User PUT success',
   })
@@ -184,7 +191,7 @@ export class UserController {
     await this.userRepository.replaceById(id, user);
   }
 
-  @del('/user/{id}')
+  @del('/users/{id}')
   @response(204, {
     description: 'User DELETE success',
   })
