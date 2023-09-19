@@ -49,4 +49,42 @@ export class AuthController {
       validateOTP.passcode,
     );
   }
+
+  @post('/auth/otp/send-email')
+  @response(200, {
+    description: 'Generate OTP - 2FA email',
+  })
+  async generateOTPEmail(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GenerateOtp, {
+            title: 'GenerateOtp',
+          }),
+        },
+      },
+    })
+    generateOTP: GenerateOtp,
+  ) {
+    return this.authService.otpSendEmail(generateOTP)
+  }
+
+  @post('/auth/otp/verify-email')
+  @response(200, {
+    description: 'Validate OTP - 2FA email',
+  })
+  async verifyOTPEmail(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(ValidateOtp, {
+            title: 'ValidateOtp',
+          }),
+        },
+      },
+    })
+    validateOTP: ValidateOtp,
+  ) {
+    return this.authService.otpVerifyEmail(validateOTP)
+  }
 }
