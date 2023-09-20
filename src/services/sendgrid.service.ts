@@ -8,11 +8,15 @@ export class SendgridService {
   }
 
   async sendMail(to: string, templateId: string, data: Record<string, string>) {
-    await sgMail.send({
-      to,
-      templateId,
-      from: process.env.SENDGRID_FROM ?? '',
-      dynamicTemplateData: data,
-    });
+    try {
+      await sgMail.send({
+        to,
+        templateId,
+        from: process.env.SENDGRID_FROM ?? '',
+        dynamicTemplateData: data,
+      });
+    } catch (err) {
+      console.log(err.body.errors);
+    }
   }
 }

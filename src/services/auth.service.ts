@@ -1,11 +1,11 @@
-import {BindingScope, injectable} from '@loopback/core';
+import {BindingScope, injectable, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
-import {KeyValueRepository, UserRepository} from '../repositories';
 import {GenerateOtp, ValidateOtp} from '../models';
-
+import {KeyValueRepository, UserRepository} from '../repositories';
+import {SendgridService} from './sendgrid.service';
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(
@@ -14,7 +14,10 @@ export class AuthService {
 
     @repository(KeyValueRepository)
     private readonly keyValueRepository: KeyValueRepository,
-  ) {}
+
+    @service(SendgridService)
+    private readonly sendgridService: SendgridService,
+  ) { }
 
   async otpSendEmail(generateOTP: GenerateOtp) {
     const user = await this.userRepository.findById(generateOTP.userId);
@@ -27,7 +30,14 @@ export class AuthService {
       (Math.random() * (10000 - 1000) + 1000).toString(),
     ).toString();
 
-    // Send email with code
+    const data = {
+      name: user.firstName,
+      optCode: otpCode,
+    }
+
+    const templateId = process.env.EMAIL_2FA_TEMPLATE_ID ?? ''
+
+    await this.sendgridService.sendMail('andresf.mrh@gmail.com', templateId, data)
 
     const ttl = new Date();
     ttl.setMinutes(ttl.getMinutes() + 2);
