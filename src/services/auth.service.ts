@@ -12,6 +12,21 @@ export class AuthService {
     private readonly userRepository: UserRepository,
   ) {}
 
+  async getUserFromToken(token: string) {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as Record<string, string>
+
+    const role = await this.userRepository.role(payload.userId)
+
+    if (!role) {
+      return null
+    }
+
+    return {
+      userId: payload.userId,
+      permissions: role.permissions
+    }
+  }
+
   async generateOTP(userId: string) {
     const user = await this.userRepository.findById(userId);
     if (!user) {

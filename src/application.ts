@@ -9,6 +9,8 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import {AuthStrategy} from './auth/strategy';
+import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
 
 export {ApplicationConfig};
 
@@ -40,5 +42,7 @@ export class UrbanNavBeApplication extends BootMixin(
         nested: true,
       },
     };
+    registerAuthenticationStrategy(this, AuthStrategy)
+    this.component(AuthenticationComponent)
   }
 }
