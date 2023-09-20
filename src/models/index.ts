@@ -4,3 +4,4 @@ export * from './vehicle.model';
 export * from './contacts.model';
 export * from './generate-otp.model';
 export * from './validate-otp.model';
+export * from './pqrs.model';
