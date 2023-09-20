@@ -17,7 +17,7 @@ export class AuthService {
 
     @service(SendgridService)
     private readonly sendgridService: SendgridService,
-  ) { }
+  ) {}
 
   async otpSendEmail(generateOTP: GenerateOtp) {
     const user = await this.userRepository.findById(generateOTP.userId);
@@ -33,11 +33,16 @@ export class AuthService {
     const data = {
       name: user.firstName,
       optCode: otpCode,
-    }
+    };
 
-    const templateId = process.env.EMAIL_2FA_TEMPLATE_ID ?? ''
+    const templateId = process.env.EMAIL_2FA_TEMPLATE_ID ?? '';
 
-    await this.sendgridService.sendMail('andresf.mrh@gmail.com', templateId, data)
+    await this.sendgridService.sendMail(
+      'OTP Auth Code',
+      user.email,
+      templateId,
+      data,
+    );
 
     const ttl = new Date();
     ttl.setMinutes(ttl.getMinutes() + 2);
