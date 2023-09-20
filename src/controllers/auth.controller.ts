@@ -1,13 +1,32 @@
 import {service} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
-import {GenerateOtp, ValidateOtp} from '../models';
+import {Credentials, GenerateOtp, ValidateOtp} from '../models';
 import {AuthService} from '../services';
 
 export class AuthController {
   constructor(
     @service(AuthService)
     private readonly authService: AuthService,
-  ) {}
+  ) { }
+
+  @post('/auth/sign-in')
+  @response(200, {
+    description: 'Sign In',
+  })
+  async signIn(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Credentials, {
+            title: 'Credentials',
+          }),
+        },
+      },
+    })
+    credentials: Credentials,
+  ) {
+    return this.authService.signIn(credentials);
+  }
 
   @post('/auth/otp/generate')
   @response(200, {

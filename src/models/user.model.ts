@@ -35,12 +35,12 @@ export class User extends Entity {
   password: string;
 
   @property({
-    type: 'string',
+    type: 'string'
   })
   photoURL?: string;
 
   @property({
-    type: 'string',
+    type: 'string'
   })
   secret2fa?: string;
 

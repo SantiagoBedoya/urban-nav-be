@@ -1,3 +1,5 @@
+import {authenticate} from '@loopback/authentication';
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -7,30 +9,35 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
+  HttpErrors,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {User} from '../models';
+import {Contacts, User} from '../models';
 import {UserRepository} from '../repositories';
-import {service} from '@loopback/core';
 import {UsersService} from '../services';
-
 
 export class UserController {
   constructor(
     @repository(UserRepository)
-    public userRepository : UserRepository,
+    public userRepository: UserRepository,
     @service(UsersService)
-    public userService : UsersService,
+    public userService: UsersService,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateUser],
+  })
   @post('/users')
   @response(200, {
     description: 'User model instance',
@@ -49,7 +56,7 @@ export class UserController {
     })
     user: Omit<User, '_id'>,
   ): Promise<User> {
-     return this.userService.createUser(user);
+    return this.userService.createUser(user);
   }
 
   @get('/users/count')
@@ -57,9 +64,7 @@ export class UserController {
     description: 'User model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(User) where?: Where<User>,
-  ): Promise<Count> {
+  async count(@param.where(User) where?: Where<User>): Promise<Count> {
     return this.userRepository.count(where);
   }
 
@@ -75,9 +80,7 @@ export class UserController {
       },
     },
   })
-  async find(
-    @param.filter(User) filter?: Filter<User>,
-  ): Promise<User[]> {
+  async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
     return this.userRepository.find(filter);
   }
 
@@ -111,9 +114,30 @@ export class UserController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>
+    @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>,
   ): Promise<User> {
     return this.userRepository.findById(id, filter);
+  }
+
+
+  @get('/users/{id}/contacts')
+  @response(200, {
+    description: 'User contacts model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Contacts),
+      },
+    },
+  })
+  async findByIdContacts(
+    @param.path.string('id') id: string,
+
+  ) {
+    const user = await this.userRepository.findById(id);
+    if(!user){
+      throw new HttpErrors.NotFound('User not found');
+    }
+    return user.contacts;
   }
 
   @patch('/users/{id}')
@@ -131,6 +155,30 @@ export class UserController {
     })
     user: User,
   ): Promise<void> {
+    await this.userRepository.updateById(id, user);
+  }
+
+
+  @patch('/users/{id}/contacts')
+  @response(204, {
+    description: 'User contacts PATCH success',
+  })
+  async updateByIdContacts(
+    @param.path.string('id') id: string,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Contacts),
+        },
+      },
+    })
+    contacts: Contacts,
+  ): Promise<void> {
+    const user = await this.userRepository.findById(id);
+    if(!user){
+      throw new HttpErrors.NotFound('User not found');
+    }
+    user.contacts = contacts.items;
     await this.userRepository.updateById(id, user);
   }
 
