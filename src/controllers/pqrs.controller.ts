@@ -7,13 +7,13 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
@@ -23,7 +23,7 @@ import {PqrsRepository} from '../repositories';
 export class PqrsController {
   constructor(
     @repository(PqrsRepository)
-    public pqrsRepository : PqrsRepository,
+    public pqrsRepository: PqrsRepository,
   ) {}
 
   @post('/pqrs')
@@ -37,7 +37,7 @@ export class PqrsController {
         'application/json': {
           schema: getModelSchemaRef(Pqrs, {
             title: 'NewPqrs',
-            exclude: ['id'],
+            exclude: ['_id'],
           }),
         },
       },
@@ -52,9 +52,7 @@ export class PqrsController {
     description: 'Pqrs model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Pqrs) where?: Where<Pqrs>,
-  ): Promise<Count> {
+  async count(@param.where(Pqrs) where?: Where<Pqrs>): Promise<Count> {
     return this.pqrsRepository.count(where);
   }
 
@@ -70,9 +68,7 @@ export class PqrsController {
       },
     },
   })
-  async find(
-    @param.filter(Pqrs) filter?: Filter<Pqrs>,
-  ): Promise<Pqrs[]> {
+  async find(@param.filter(Pqrs) filter?: Filter<Pqrs>): Promise<Pqrs[]> {
     return this.pqrsRepository.find(filter);
   }
 
@@ -106,7 +102,7 @@ export class PqrsController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Pqrs, {exclude: 'where'}) filter?: FilterExcludingWhere<Pqrs>
+    @param.filter(Pqrs, {exclude: 'where'}) filter?: FilterExcludingWhere<Pqrs>,
   ): Promise<Pqrs> {
     return this.pqrsRepository.findById(id, filter);
   }
