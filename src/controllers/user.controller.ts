@@ -12,16 +12,15 @@ import {
   del,
   get,
   getModelSchemaRef,
+  HttpErrors,
   param,
   patch,
   post,
   put,
   requestBody,
   response,
-  HttpErrors,
 } from '@loopback/rest';
 import {Permissions} from '../auth/permissions.enum';
-import {User} from '../models';
 import {Contacts, User} from '../models';
 import {UserRepository} from '../repositories';
 import {UsersService} from '../services';
@@ -119,7 +118,6 @@ export class UserController {
     return this.userRepository.findById(id, filter);
   }
 
-
   @get('/users/{id}/contacts')
   @response(200, {
     description: 'User contacts model instance',
@@ -129,12 +127,9 @@ export class UserController {
       },
     },
   })
-  async findByIdContacts(
-    @param.path.string('id') id: string,
-
-  ) {
+  async findByIdContacts(@param.path.string('id') id: string) {
     const user = await this.userRepository.findById(id);
-    if(!user){
+    if (!user) {
       throw new HttpErrors.NotFound('User not found');
     }
     return user.contacts;
@@ -158,7 +153,6 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
-
   @patch('/users/{id}/contacts')
   @response(204, {
     description: 'User contacts PATCH success',
@@ -175,7 +169,7 @@ export class UserController {
     contacts: Contacts,
   ): Promise<void> {
     const user = await this.userRepository.findById(id);
-    if(!user){
+    if (!user) {
       throw new HttpErrors.NotFound('User not found');
     }
     user.contacts = contacts.items;
