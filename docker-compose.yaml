@@ -6,14 +6,14 @@ services:
       context: .
     environment:
       MONGODB_URL: mongodb://database:27017/urban-nav
-      SENDGRID_API_KEY: "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"
-      SENDGRID_FROM: "andres.martinez31699@ucaldas.edu.co"
-      TWILIO_SID: "ACb0da8a690936790f92d62935976d1e06"
-      TWILIO_AUTH_TOKEN: "8bc427a0ffea2d8951c0bbf88c0bbdf2"
-      TWILIO_PHONE_NUMBER: "+13342125830"
-      EMAIL_2FA_TEMPLATE_ID: "d-e43870671e1b44bb994e637676bae5d0"
-      EMAIL_VERIFICATION_TEMPLATE_ID: "d-dd49427451a144f0b858a210742342e2"
-      JWT_SECRET: "0e76ee89-d082-467c-9d0a-86ebabad9eb7"
+      SENDGRID_API_KEY: ""
+      SENDGRID_FROM: ""
+      TWILIO_SID: ""
+      TWILIO_AUTH_TOKEN: ""
+      TWILIO_PHONE_NUMBER: ""
+      EMAIL_2FA_TEMPLATE_ID: ""
+      EMAIL_VERIFICATION_TEMPLATE_ID: ""
+      JWT_SECRET: ""
       PASSWORD_RECOVERY_TEMPLATE_ID: ""
       REDIS_HOST: redis
       FRONTEND_URL: "http://localhost:4200"
