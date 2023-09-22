@@ -35,7 +35,8 @@
     "start": "node -r source-map-support/register .",
     "start:dev": "tsc-watch --target es2018 --outDir ./dist --onSuccess \"node .\"",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
-    "rebuild": "npm run clean && npm run build"
+    "rebuild": "npm run clean && npm run build",
+    "seed": "node seed/migrate.js"
   },
   "repository": {
     "type": "git",
