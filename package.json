@@ -64,6 +64,7 @@
     "jsonwebtoken": "^9.0.2",
     "loopback-connector-kv-redis": "^3.0.3",
     "loopback-connector-mongodb": "^5.6.0",
+    "mongoose": "^7.5.2",
     "parse-bearer-token": "^1.0.1",
     "speakeasy": "^2.0.0",
     "tslib": "^2.0.0",
