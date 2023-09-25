@@ -5,7 +5,7 @@ import {
   GenerateOtp,
   PasswordRecovery,
   PasswordReset,
-  SignUpCredentials,
+  User,
   ValidateOtp,
 } from '../models';
 import {AuthService} from '../services';
@@ -43,13 +43,13 @@ export class AuthController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(SignUpCredentials, {
+          schema: getModelSchemaRef(User, {
             title: 'SignUpCredentials',
           }),
         },
       },
     })
-    signUpcredentials: SignUpCredentials,
+    signUpcredentials: User,
   ) {
     return this.authService.signUp(signUpcredentials);
   }

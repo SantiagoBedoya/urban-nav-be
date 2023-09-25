@@ -9,7 +9,7 @@ import {
   GenerateOtp,
   PasswordRecovery,
   PasswordReset,
-  SignUpCredentials,
+  User,
   ValidateOtp,
 } from '../models';
 import {KeyValueRepository, UserRepository} from '../repositories';
@@ -83,7 +83,17 @@ export class AuthService {
     };
   }
 
-  signUp (signUpCredentials: SignUpCredentials) {
+  async signUp(signUpCredentials: User) {
+    const existUser = await this.userRepository.findOne({
+      where: {
+        email: signUpCredentials.email,
+      },
+    });
+    if (existUser) {
+      throw new HttpErrors.Conflict('Email already registered');
+    }
+
+    return this.userRepository.create(signUpCredentials);
 
   }
 
