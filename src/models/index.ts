@@ -7,3 +7,5 @@ export * from './validate-otp.model';
 export * from './key-value.model';
 export * from './vehicle.model';
 export * from './credentials.model';
+export * from './password-recovery.model';
+export * from './password-reset.model';

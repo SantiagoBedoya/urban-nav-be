@@ -1,13 +1,19 @@
 import {service} from '@loopback/core';
 import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
-import {Credentials, GenerateOtp, ValidateOtp} from '../models';
+import {
+  Credentials,
+  GenerateOtp,
+  PasswordRecovery,
+  PasswordReset,
+  ValidateOtp,
+} from '../models';
 import {AuthService} from '../services';
 
 export class AuthController {
   constructor(
     @service(AuthService)
     private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   @post('/auth/sign-in')
   @response(200, {
@@ -85,7 +91,7 @@ export class AuthController {
     })
     generateOTP: GenerateOtp,
   ) {
-    return this.authService.otpSendEmail(generateOTP)
+    return this.authService.otpSendEmail(generateOTP);
   }
 
   @post('/auth/otp/verify-email')
@@ -104,6 +110,44 @@ export class AuthController {
     })
     validateOTP: ValidateOtp,
   ) {
-    return this.authService.otpVerifyEmail(validateOTP)
+    return this.authService.otpVerifyEmail(validateOTP);
+  }
+
+  @post('/auth/password-recovery')
+  @response(200, {
+    description: 'Password recovery',
+  })
+  async passwordRecovery(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(PasswordRecovery, {
+            title: 'PasswordRecovery',
+          }),
+        },
+      },
+    })
+    passwordRecovery: PasswordRecovery,
+  ) {
+    return this.authService.passwordRecovery(passwordRecovery);
+  }
+
+  @post('/auth/password-reset')
+  @response(200, {
+    description: 'Password reset',
+  })
+  async passwordReset(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(PasswordReset, {
+            title: 'PasswordReset',
+          }),
+        },
+      },
+    })
+    passwordReset: PasswordReset,
+  ) {
+    return this.authService.passwordReset(passwordReset);
   }
 }
