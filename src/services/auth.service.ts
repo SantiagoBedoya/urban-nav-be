@@ -9,6 +9,7 @@ import {
   GenerateOtp,
   PasswordRecovery,
   PasswordReset,
+  SignUpCredentials,
   ValidateOtp,
 } from '../models';
 import {KeyValueRepository, UserRepository} from '../repositories';
@@ -80,6 +81,10 @@ export class AuthService {
     return {
       userId: existUser._id,
     };
+  }
+
+  signUp (signUpCredentials: SignUpCredentials) {
+
   }
 
   async getUserFromToken(token: string) {
