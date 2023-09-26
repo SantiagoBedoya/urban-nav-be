@@ -79,6 +79,7 @@ export class AuthService {
     }
     return {
       userId: existUser._id,
+      has2fa: existUser.secret2fa ? true : false,
     };
   }
 
