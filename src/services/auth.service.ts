@@ -9,7 +9,7 @@ import {
   GenerateOtp,
   PasswordRecovery,
   PasswordReset,
-  User,
+  SignUpCredentials,
   ValidateOtp,
 } from '../models';
 import {KeyValueRepository, UserRepository} from '../repositories';
@@ -83,7 +83,7 @@ export class AuthService {
     };
   }
 
-  async signUp(signUpCredentials: User) {
+  async signUp(signUpCredentials: SignUpCredentials) {
     const existUser = await this.userRepository.findOne({
       where: {
         email: signUpCredentials.email,
@@ -93,8 +93,24 @@ export class AuthService {
       throw new HttpErrors.Conflict('Email already registered');
     }
 
-    return this.userRepository.create(signUpCredentials);
+    let roleId = process.env.CLIENT_ROLE_ID;
 
+    if (signUpCredentials.userType === 'DRIVER') {
+      roleId = process.env.DRIVER_ROLE_ID;
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(signUpCredentials.password, salt);
+
+    const newUser = {
+      firstName: signUpCredentials.firstName,
+      lastName: signUpCredentials.lastName,
+      email: signUpCredentials.email,
+      password: hash,
+      roleId,
+    };
+
+    return this.userRepository.create(newUser);
   }
 
   async getUserFromToken(token: string) {
