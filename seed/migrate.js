@@ -1,6 +1,8 @@
 const Role = require('./role');
+const User = require('./user');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
 
 dotenv.config();
 
@@ -19,7 +21,7 @@ const clientRole = new Role({
   _id: process.env.CLIENT_ROLE_ID,
   name: 'Client',
   description: 'Role for client',
-  permissions: [],
+  permissions: [44],
 });
 
 const driverRole = new Role({
@@ -27,6 +29,15 @@ const driverRole = new Role({
   name: 'Driver',
   description: 'Role for driver',
   permissions: [],
+});
+
+// users
+const clientUser = new User({
+  firstName: 'Juan',
+  lastName: 'Perez',
+  email: 'juan@google.com',
+  password: bcrypt.hashSync('juan123', 10),
+  roleId: process.env.CLIENT_ROLE_ID,
 });
 
 mongoose.connect(process.env.MONGODB_URL).then(async () => {
@@ -48,6 +59,14 @@ mongoose.connect(process.env.MONGODB_URL).then(async () => {
     console.log('Driver role created');
   } catch (err) {
     console.log('Driver role already exists');
+  }
+
+  // users
+  try {
+    await clientUser.save();
+    console.log('Client user created');
+  } catch (err) {
+    console.log('Error creating client user:', err);
   }
   await mongoose.disconnect();
 });

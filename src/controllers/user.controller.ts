@@ -1,18 +1,18 @@
 import {authenticate} from '@loopback/authentication';
-import {service} from '@loopback/core';
+import {inject, service} from '@loopback/core';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
-  repository,
   Where,
+  repository,
 } from '@loopback/repository';
 import {
+  HttpErrors,
   del,
   get,
   getModelSchemaRef,
-  HttpErrors,
   param,
   patch,
   post,
@@ -20,6 +20,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {Contacts, User} from '../models';
 import {UserRepository} from '../repositories';
@@ -65,6 +66,24 @@ export class UserController {
   })
   async count(@param.where(User) where?: Where<User>): Promise<Count> {
     return this.userRepository.count(where);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListProfile],
+  })
+  @get('/users/me')
+  @response(200, {
+    description: 'Logged user',
+    content: {'application/json': {schema: getModelSchemaRef(User)}},
+  })
+  async getMyInformation(@inject(SecurityBindings.USER) user: UserProfile) {
+    return this.userRepository.findById(user.userId, {
+      fields: {
+        password: false,
+        secret2fa: false,
+      },
+    });
   }
 
   @get('/users')

@@ -64,4 +64,7 @@ export enum Permissions {
   CreatePaymentMethod,
   UpdatePaymentMethod,
   DeletePaymentMethod,
+
+  // Profile
+  ListProfile,
 }

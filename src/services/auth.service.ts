@@ -83,21 +83,24 @@ export class AuthService {
   }
 
   async getUserFromToken(token: string) {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as Record<
-      string,
-      string
-    >;
+    try {
+      const payload = jwt.verify(token, process.env.JWT_SECRET!) as Record<
+        string,
+        string
+      >;
+      const role = await this.userRepository.role(payload.userId);
 
-    const role = await this.userRepository.role(payload.userId);
+      if (!role) {
+        return null;
+      }
 
-    if (!role) {
-      return null;
+      return {
+        userId: payload.userId,
+        permissions: role.permissions,
+      };
+    } catch (err) {
+      throw new HttpErrors.Unauthorized('Invalid token');
     }
-
-    return {
-      userId: payload.userId,
-      permissions: role.permissions,
-    };
   }
 
   async otpSendEmail(generateOTP: GenerateOtp) {
