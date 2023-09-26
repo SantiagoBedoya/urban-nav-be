@@ -5,6 +5,7 @@ import {
   GenerateOtp,
   PasswordRecovery,
   PasswordReset,
+  SignUpCredentials,
   ValidateOtp,
 } from '../models';
 import {AuthService} from '../services';
@@ -32,6 +33,25 @@ export class AuthController {
     credentials: Credentials,
   ) {
     return this.authService.signIn(credentials);
+  }
+
+  @post('/auth/sign-up')
+  @response(200, {
+    description: 'Sign Up',
+  })
+  async signUp(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(SignUpCredentials, {
+            title: 'SignUpCredentials',
+          }),
+        },
+      },
+    })
+    signUpcredentials: SignUpCredentials,
+  ) {
+    return this.authService.signUp(signUpcredentials);
   }
 
   @post('/auth/otp/generate')

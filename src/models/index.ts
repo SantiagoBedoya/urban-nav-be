@@ -9,3 +9,4 @@ export * from './vehicle.model';
 export * from './credentials.model';
 export * from './password-recovery.model';
 export * from './password-reset.model';
+export * from './sign-up-credentials.model';
