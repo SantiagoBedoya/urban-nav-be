@@ -39,6 +39,12 @@ export class Pqrs extends Entity {
   })
   date?: string;
 
+  @property({
+    type: 'string',
+    required: true,
+  })
+  description: string;
+
   constructor(data?: Partial<Pqrs>) {
     super(data);
   }
