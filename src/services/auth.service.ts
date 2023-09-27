@@ -12,15 +12,15 @@ import {
   SignUpCredentials,
   ValidateOtp,
 } from '../models';
-import {KeyValueRepository, UserRepository} from '../repositories';
+import {Code2FaRepository, UserRepository} from '../repositories';
 import {SendgridService} from './sendgrid.service';
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(
     @repository(UserRepository)
     private readonly userRepository: UserRepository,
-    @repository(KeyValueRepository)
-    private readonly keyValueRepository: KeyValueRepository,
+    @repository(Code2FaRepository)
+    private readonly code2faRepository: Code2FaRepository,
     @service(SendgridService)
     private readonly sendgridService: SendgridService,
   ) {}
@@ -163,11 +163,9 @@ export class AuthService {
     const ttl = new Date();
     ttl.setMinutes(ttl.getMinutes() + 2);
 
-    await this.keyValueRepository.set(otpCode, {
-      value: {
-        userId: user._id,
-      },
-      ttl: ttl.getTime(),
+    await this.code2faRepository.create({
+      userId: user._id,
+      token: otpCode,
     });
   }
 
@@ -178,19 +176,18 @@ export class AuthService {
       throw new HttpErrors.NotFound('User not found');
     }
 
-    const value = await this.keyValueRepository.get(validateOTP.passcode);
+    const code2fa = await this.code2faRepository.findOne({
+      where: {
+        userId: user._id,
+        token: validateOTP.passcode,
+      },
+    });
 
-    if (!value) {
+    if (!code2fa) {
       throw new HttpErrors.Unauthorized('Invalid passcode');
     }
 
-    await this.keyValueRepository.delete(validateOTP.passcode);
-
-    const now = Date.now();
-
-    if (now > value.ttl) {
-      throw new HttpErrors.Unauthorized('The passcode is expired');
-    }
+    await this.code2faRepository.deleteById(code2fa._id);
 
     const role = await this.userRepository.role(validateOTP.userId);
 
