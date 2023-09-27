@@ -143,8 +143,10 @@ export class AuthService {
     }
 
     const otpCode = parseInt(
-      (Math.random() * (10000 - 1000) + 1000).toString(),
+      (Math.random() * (1000000 - 100000) + 100000).toString(),
     ).toString();
+
+    console.log(otpCode)
 
     const data = {
       name: user.firstName,
