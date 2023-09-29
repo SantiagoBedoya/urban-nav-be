@@ -67,4 +67,11 @@ export enum Permissions {
 
   // Profile
   ListProfile,
+
+  // DriverUbication
+  SetDriverPoints,
+  ListDriverUbication,
+  CreateDriverUbication,
+  UpdateDriverUbication,
+  DeleteDriverUbication,
 }

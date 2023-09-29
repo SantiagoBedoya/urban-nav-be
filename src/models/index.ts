@@ -10,3 +10,5 @@ export * from './user.model';
 export * from './validate-otp.model';
 export * from './vehicle.model';
 export * from './code-2-fa.model';
+export * from './driver-ubication.model';
+export * from './driver-points.model';
