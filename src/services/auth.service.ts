@@ -51,7 +51,7 @@ export class AuthService {
       throw new HttpErrors.NotFound('This email is not registered');
     }
     const token = jwt.sign({userId: existUser._id}, process.env.JWT_SECRET!);
-    const url = `${process.env.FRONTEND_URL}/password-reset?token=${token}`;
+    const url = `${process.env.FRONTEND_URL}/auth/password-reset?token=${token}`;
     await this.sendgridService.sendMail(
       'Password Recovery',
       existUser.email,
