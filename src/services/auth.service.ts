@@ -23,7 +23,7 @@ export class AuthService {
     private readonly code2faRepository: Code2FaRepository,
     @service(SendgridService)
     private readonly sendgridService: SendgridService,
-  ) {}
+  ) { }
 
   async passwordReset(passwordReset: PasswordReset) {
     const payload = jwt.verify(
@@ -111,7 +111,20 @@ export class AuthService {
       roleId,
     };
 
-    return this.userRepository.create(newUser);
+    const splitted = signUpCredentials.email.split('@')
+
+    const letters = splitted[0].slice(0, 3)
+
+    const domain = splitted[1]
+
+    const hiddenEmail = `${letters}**@${domain}`
+
+    const res = await this.userRepository.create(newUser);
+
+    return {
+      id: res._id,
+      hiddenEmail,
+    }
   }
 
   async getUserFromToken(token: string) {
