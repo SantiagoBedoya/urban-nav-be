@@ -103,6 +103,16 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(signUpCredentials.password, salt);
 
+    await this.sendgridService.sendMail(
+      'Welcome to UrbanNav',
+      signUpCredentials.email,
+      process.env.EMAIL_VERIFICATION_TEMPLATE_ID!,
+      {
+        name: signUpCredentials.firstName,
+        url: process.env.FRONTEND_URL + '/sign-in',
+      },
+    );
+
     const newUser = {
       firstName: signUpCredentials.firstName,
       lastName: signUpCredentials.lastName,
