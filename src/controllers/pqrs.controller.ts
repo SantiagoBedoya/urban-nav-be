@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -19,11 +20,14 @@ import {
 } from '@loopback/rest';
 import {Pqrs} from '../models';
 import {PqrsRepository} from '../repositories';
+import {SendgridService} from '../services';
 
 export class PqrsController {
   constructor(
     @repository(PqrsRepository)
     public pqrsRepository: PqrsRepository,
+    @service(SendgridService)
+    public sendgridService: SendgridService,
   ) {}
 
   @post('/pqrs')
@@ -44,6 +48,17 @@ export class PqrsController {
     })
     pqrs: Omit<Pqrs, 'id'>,
   ): Promise<Pqrs> {
+    await this.sendgridService.sendMail(
+      'New PQRS',
+      process.env.ADMIN_EMAIL!,
+      process.env.EMAIL_NEW_PQRS_TEMPLATE_ID!,
+      {
+        name: pqrs.firstName,
+        type: pqrs.type,
+        description: pqrs.description,
+        from: pqrs.email,
+      },
+    );
     return this.pqrsRepository.create(pqrs);
   }
 

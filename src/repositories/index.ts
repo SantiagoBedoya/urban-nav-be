@@ -4,3 +4,4 @@ export * from './user.repository';
 export * from './vehicle.repository';
 export * from './code-2-fa.repository';
 export * from './driver-ubication.repository';
+export * from './point.repository';

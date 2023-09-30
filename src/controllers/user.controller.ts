@@ -10,6 +10,9 @@ import {
 } from '@loopback/repository';
 import {
   HttpErrors,
+  Request,
+  Response,
+  RestBindings,
   del,
   get,
   getModelSchemaRef,
@@ -24,7 +27,7 @@ import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {Contacts, User} from '../models';
 import {UserRepository} from '../repositories';
-import {UsersService} from '../services';
+import {CloudinaryService, UsersService} from '../services';
 
 export class UserController {
   constructor(
@@ -32,6 +35,8 @@ export class UserController {
     public userRepository: UserRepository,
     @service(UsersService)
     public userService: UsersService,
+    @service(CloudinaryService)
+    public cloudinaryService: CloudinaryService,
   ) {}
 
   @authenticate({
@@ -83,6 +88,36 @@ export class UserController {
         password: false,
         secret2fa: false,
       },
+    });
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListProfile],
+  })
+  @patch('/users/me')
+  @response(204, {
+    description: 'File to upload',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+        },
+      },
+    },
+  })
+  async updatePhoto(
+    @inject(SecurityBindings.USER) user: UserProfile,
+    @requestBody.file() request: Request,
+    @inject(RestBindings.Http.RESPONSE) res: Response,
+  ): Promise<void> {
+    const cldResponse = await this.cloudinaryService.uploadFile(request, res);
+    if (!cldResponse.done) {
+      console.log(cldResponse.err);
+      throw new HttpErrors.InternalServerError('Something went wrong');
+    }
+    await this.userRepository.updateById(user.userId, {
+      photoURL: cldResponse.url,
     });
   }
 

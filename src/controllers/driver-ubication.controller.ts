@@ -57,7 +57,7 @@ export class DriverUbicationController {
       promises.push(
         this.driverUbicationRepository.create({
           driverId: user.userId,
-          ubicationId: point,
+          pointId: point,
         }),
       );
     });

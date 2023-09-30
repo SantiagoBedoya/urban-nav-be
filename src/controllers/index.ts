@@ -9,3 +9,4 @@ export * from './auth.controller';
 export * from './pqrs.controller';
 export * from './driver-ubication.controller';
 export * from './driver-ubication-user.controller';
+export * from './driver-ubication-point.controller';
