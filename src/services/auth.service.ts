@@ -146,8 +146,6 @@ export class AuthService {
       (Math.random() * (1000000 - 100000) + 100000).toString(),
     ).toString();
 
-    console.log(otpCode)
-
     const data = {
       name: user.firstName,
       optCode: otpCode,
@@ -161,9 +159,6 @@ export class AuthService {
       templateId,
       data,
     );
-
-    const ttl = new Date();
-    ttl.setMinutes(ttl.getMinutes() + 2);
 
     await this.code2faRepository.create({
       userId: user._id,
