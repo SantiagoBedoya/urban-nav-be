@@ -51,7 +51,7 @@ export class AuthService {
       throw new HttpErrors.NotFound('This email is not registered');
     }
     const token = jwt.sign({userId: existUser._id}, process.env.JWT_SECRET!);
-    const url = `${process.env.FRONTEND_URL}/password-reset?token=${token}`;
+    const url = `${process.env.FRONTEND_URL}/auth/password-reset?token=${token}`;
     await this.sendgridService.sendMail(
       'Password Recovery',
       existUser.email,
@@ -103,6 +103,16 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(signUpCredentials.password, salt);
 
+    await this.sendgridService.sendMail(
+      'Welcome to UrbanNav',
+      signUpCredentials.email,
+      process.env.EMAIL_VERIFICATION_TEMPLATE_ID!,
+      {
+        name: signUpCredentials.firstName,
+        url: process.env.FRONTEND_URL + '/sign-in',
+      },
+    );
+
     const newUser = {
       firstName: signUpCredentials.firstName,
       lastName: signUpCredentials.lastName,
@@ -146,8 +156,6 @@ export class AuthService {
       (Math.random() * (1000000 - 100000) + 100000).toString(),
     ).toString();
 
-    console.log(otpCode)
-
     const data = {
       name: user.firstName,
       optCode: otpCode,
@@ -161,9 +169,6 @@ export class AuthService {
       templateId,
       data,
     );
-
-    const ttl = new Date();
-    ttl.setMinutes(ttl.getMinutes() + 2);
 
     await this.code2faRepository.create({
       userId: user._id,
