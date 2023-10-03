@@ -3,5 +3,7 @@ export * from './role.repository';
 export * from './user.repository';
 export * from './vehicle.repository';
 export * from './code-2-fa.repository';
+export * from './notification.repository';
+export * from './trip-rating.repository';
 export * from './driver-ubication.repository';
 export * from './point.repository';

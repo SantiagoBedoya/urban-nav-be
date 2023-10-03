@@ -49,7 +49,7 @@ export class User extends Entity {
     itemType: 'object',
     default: []
   })
-  contacts?:object[];
+  contacts?: object[];
 
   @belongsTo(() => Role)
   roleId: string;
