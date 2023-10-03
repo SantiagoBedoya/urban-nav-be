@@ -13,3 +13,6 @@ export * from './sign-up-credentials.model';
 export * from './user.model';
 export * from './validate-otp.model';
 export * from './vehicle.model';
+export * from './route.model';
+export * from './trip.model';
+export * from './trip-comment.model';
