@@ -1,5 +1,12 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
-import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
+import {
+  get,
+  getModelSchemaRef,
+  post,
+  requestBody,
+  response,
+} from '@loopback/rest';
 import {
   Credentials,
   GenerateOtp,
@@ -15,6 +22,16 @@ export class AuthController {
     @service(AuthService)
     private readonly authService: AuthService,
   ) {}
+
+  @authenticate({
+    strategy: 'auth',
+    options: [],
+  })
+  @get('/auth/validate-token')
+  @response(200, {
+    description: 'Sign In',
+  })
+  async validateToken() {}
 
   @post('/auth/sign-in')
   @response(200, {
