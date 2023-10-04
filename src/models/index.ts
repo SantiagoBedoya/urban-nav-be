@@ -16,3 +16,6 @@ export * from './vehicle.model';
 export * from './route.model';
 export * from './trip.model';
 export * from './trip-comment.model';
+export * from './code-2-fa.model';
+export * from './notification.model';
+export * from './trip-rating.model';
