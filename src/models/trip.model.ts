@@ -42,11 +42,6 @@ export class Trip extends Entity {
   @belongsTo(() => User)
   clientId: string;
 
-  @property({
-    type: 'string',
-  })
-  userId?: string;
-
   constructor(data?: Partial<Trip>) {
     super(data);
   }

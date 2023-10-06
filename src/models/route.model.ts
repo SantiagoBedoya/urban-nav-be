@@ -38,11 +38,6 @@ export class Route extends Entity {
   @belongsTo(() => Point)
   destinationId: string;
 
-  @property({
-    type: 'string',
-  })
-  pointId?: string;
-
   constructor(data?: Partial<Route>) {
     super(data);
   }
