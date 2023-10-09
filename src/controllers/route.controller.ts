@@ -1,29 +1,32 @@
+import {service} from '@loopback/core';
 import {
   Count,
   CountSchema,
-  Filter,
   FilterExcludingWhere,
   repository,
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
-import {Route} from '../models';
+import {CreateRouteRequest, Route} from '../models';
 import {RouteRepository} from '../repositories';
+import {RouteService} from '../services';
 
 export class RouteController {
   constructor(
     @repository(RouteRepository)
-    public routeRepository : RouteRepository,
+    public routeRepository: RouteRepository,
+    @service(RouteService)
+    public routeService: RouteService,
   ) {}
 
   @post('/routes')
@@ -35,16 +38,15 @@ export class RouteController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Route, {
-            title: 'NewRoute',
-            exclude: ['_id'],
+          schema: getModelSchemaRef(CreateRouteRequest, {
+            title: 'CreateRouteRequest',
           }),
         },
       },
     })
-    route: Omit<Route, '_id'>,
-  ): Promise<Route> {
-    return this.routeRepository.create(route);
+    route: CreateRouteRequest,
+  ) {
+    return this.routeService.create(route);
   }
 
   @get('/routes/count')
@@ -52,9 +54,7 @@ export class RouteController {
     description: 'Route model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Route) where?: Where<Route>,
-  ): Promise<Count> {
+  async count(@param.where(Route) where?: Where<Route>): Promise<Count> {
     return this.routeRepository.count(where);
   }
 
@@ -70,10 +70,10 @@ export class RouteController {
       },
     },
   })
-  async find(
-    @param.filter(Route) filter?: Filter<Route>,
-  ): Promise<Route[]> {
-    return this.routeRepository.find(filter);
+  async find(): Promise<Route[]> {
+    return this.routeRepository.find({
+      include: ['routePoints'],
+    });
   }
 
   @patch('/routes')
@@ -106,7 +106,8 @@ export class RouteController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Route, {exclude: 'where'}) filter?: FilterExcludingWhere<Route>
+    @param.filter(Route, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Route>,
   ): Promise<Route> {
     return this.routeRepository.findById(id, filter);
   }

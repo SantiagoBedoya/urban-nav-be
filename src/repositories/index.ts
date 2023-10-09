@@ -10,3 +10,4 @@ export * from './point.repository';
 export * from './route.repository';
 export * from './trip-comment.repository';
 export * from './trip.repository';
+export * from './route-point.repository';
