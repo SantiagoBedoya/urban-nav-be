@@ -1,6 +1,6 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
-import {User} from './user.model';
+import {Entity, belongsTo, model, property} from '@loopback/repository';
 import {Point} from './point.model';
+import {User} from './user.model';
 
 @model()
 export class DriverUbication extends Entity {
@@ -23,7 +23,9 @@ export class DriverUbication extends Entity {
 }
 
 export interface DriverUbicationRelations {
+  driver: User;
   // describe navigational properties here
 }
 
-export type DriverUbicationWithRelations = DriverUbication & DriverUbicationRelations;
+export type DriverUbicationWithRelations = DriverUbication &
+  DriverUbicationRelations;

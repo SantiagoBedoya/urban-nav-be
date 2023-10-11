@@ -1,6 +1,11 @@
-import {Entity, model, property, belongsTo, hasMany} from '@loopback/repository';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
 import {Role} from './role.model';
-import {Trip} from './trip.model';
 import {TripComment} from './trip-comment.model';
 
 @model()
@@ -20,7 +25,7 @@ export class User extends Entity {
 
   @property({
     type: 'string',
-    required: true
+    required: true,
   })
   lastName: string;
 
@@ -37,27 +42,24 @@ export class User extends Entity {
   password: string;
 
   @property({
-    type: 'string'
+    type: 'string',
   })
   photoURL?: string;
 
   @property({
-    type: 'string'
+    type: 'string',
   })
   secret2fa?: string;
 
   @property({
     type: 'array',
     itemType: 'object',
-    default: []
+    default: [],
   })
   contacts?: object[];
 
   @belongsTo(() => Role)
   roleId: string;
-
-  @hasMany(() => Trip)
-  trips: Trip[];
 
   @hasMany(() => TripComment)
   tripComments: TripComment[];

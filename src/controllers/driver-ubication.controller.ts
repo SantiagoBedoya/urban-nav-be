@@ -21,7 +21,12 @@ import {
 } from '@loopback/rest';
 import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
-import {DriverPoints, DriverUbication} from '../models';
+import {
+  DriverPoints,
+  DriverUbication,
+  NearestDriverRequest,
+  User,
+} from '../models';
 import {DriverUbicationRepository} from '../repositories';
 
 export class DriverUbicationController {
@@ -62,6 +67,41 @@ export class DriverUbicationController {
       );
     });
     return Promise.all(promises);
+  }
+
+  @post('/driver-ubications/nearest-driver')
+  @response(200, {
+    description: 'Drivers',
+    content: {'application/json': {schema: getModelSchemaRef(User)}},
+  })
+  async nearestDriver(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(NearestDriverRequest, {
+            title: 'NearestDriverRequest',
+          }),
+        },
+      },
+    })
+    nearestDriver: NearestDriverRequest,
+  ) {
+    const nearestDrivers = await this.driverUbicationRepository.find({
+      where: {
+        pointId: nearestDriver.origin,
+      },
+      include: [{relation: 'driver'}],
+    });
+    const drivers = nearestDrivers.map(nd => {
+      const driverInfo = {
+        _id: nd.driver._id,
+        firstName: nd.driver.firstName,
+        lastName: nd.driver.lastName,
+        email: nd.driver.email,
+      };
+      return driverInfo;
+    });
+    return drivers;
   }
 
   @get('/driver-ubications/count')
