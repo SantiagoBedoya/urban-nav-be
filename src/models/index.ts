@@ -19,3 +19,5 @@ export * from './trip-comment.model';
 export * from './code-2-fa.model';
 export * from './notification.model';
 export * from './trip-rating.model';
+export * from './route-point.model';
+export * from './create-route-request.model';

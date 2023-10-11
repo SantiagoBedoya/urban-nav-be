@@ -1,6 +1,7 @@
 import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
 import {Trip} from './trip.model';
 import {Point} from './point.model';
+import {RoutePoint} from './route-point.model';
 
 @model()
 export class Route extends Entity {
@@ -37,6 +38,14 @@ export class Route extends Entity {
 
   @belongsTo(() => Point)
   destinationId: string;
+
+  @property({
+    type: 'string',
+  })
+  routeId?: string;
+
+  @hasMany(() => RoutePoint)
+  routePoints: RoutePoint[];
 
   constructor(data?: Partial<Route>) {
     super(data);
