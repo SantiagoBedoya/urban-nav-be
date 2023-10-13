@@ -28,7 +28,7 @@ const driverRole = new Role({
   _id: process.env.DRIVER_ROLE_ID,
   name: 'Driver',
   description: 'Role for driver',
-  permissions: [],
+  permissions: [45, 46, 47, 48, 49],
 });
 
 // users
