@@ -23,6 +23,11 @@ export class RoutePoint extends Entity {
   })
   distance: number;
 
+  @property({
+    type: 'number',
+  })
+  distanceToDest?: number;
+
   @belongsTo(() => Route)
   routeId: string;
 
