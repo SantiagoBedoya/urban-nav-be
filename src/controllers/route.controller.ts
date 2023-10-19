@@ -17,7 +17,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
-import {CreateRouteRequest, Route} from '../models';
+import {CreateRouteRequest, PointsForDijkstra, Route} from '../models';
 import {RouteRepository} from '../repositories';
 import {RouteService} from '../services';
 
@@ -147,5 +147,25 @@ export class RouteController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.routeRepository.deleteById(id);
+  }
+
+  @post('/routes/best-route')
+  @response(200, {
+    description: 'Route model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Route)}},
+  })
+  async getBestRoute(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(PointsForDijkstra, {
+            title: 'PointsForDijkstra',
+          }),
+        },
+      },
+    })
+    points: PointsForDijkstra,
+  ) {
+    return this.routeService.getBestRoute(points);
   }
 }
