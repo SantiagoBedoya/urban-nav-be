@@ -149,7 +149,7 @@ export class RouteController {
     await this.routeRepository.deleteById(id);
   }
 
-  @post('/best-route')
+  @post('/routes/best-route')
   @response(200, {
     description: 'Route model instance',
     content: {'application/json': {schema: getModelSchemaRef(Route)}},
