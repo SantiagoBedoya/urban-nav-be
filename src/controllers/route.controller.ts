@@ -149,7 +149,6 @@ export class RouteController {
     await this.routeRepository.deleteById(id);
   }
 
-  // Custom routes
   @post('/best-route')
   @response(200, {
     description: 'Route model instance',
