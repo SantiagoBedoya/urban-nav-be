@@ -29,12 +29,6 @@ export enum Permissions {
   UpdatePoint,
   DeletePoint,
 
-  // Route
-  ListRoute,
-  CreateRoute,
-  UpdateRoute,
-  DeleteRoute,
-
   // Trip
   ListTrip,
   CreateTrip,
