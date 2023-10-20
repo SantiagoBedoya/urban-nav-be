@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,25 +8,30 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {Notification} from '../models';
 import {NotificationRepository} from '../repositories';
 
 export class NotificationController {
   constructor(
     @repository(NotificationRepository)
-    public notificationRepository : NotificationRepository,
+    public notificationRepository: NotificationRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateNotification],
+  })
   @post('/notifications')
   @response(200, {
     description: 'Notification model instance',
@@ -47,6 +53,10 @@ export class NotificationController {
     return this.notificationRepository.create(notification);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListNotification],
+  })
   @get('/notifications/count')
   @response(200, {
     description: 'Notification model count',
@@ -58,6 +68,10 @@ export class NotificationController {
     return this.notificationRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListNotification],
+  })
   @get('/notifications')
   @response(200, {
     description: 'Array of Notification model instances',
@@ -76,6 +90,10 @@ export class NotificationController {
     return this.notificationRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateNotification],
+  })
   @patch('/notifications')
   @response(200, {
     description: 'Notification PATCH success count',
@@ -95,6 +113,10 @@ export class NotificationController {
     return this.notificationRepository.updateAll(notification, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListNotification],
+  })
   @get('/notifications/{id}')
   @response(200, {
     description: 'Notification model instance',
@@ -106,11 +128,16 @@ export class NotificationController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Notification, {exclude: 'where'}) filter?: FilterExcludingWhere<Notification>
+    @param.filter(Notification, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Notification>,
   ): Promise<Notification> {
     return this.notificationRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateNotification],
+  })
   @patch('/notifications/{id}')
   @response(204, {
     description: 'Notification PATCH success',
@@ -129,6 +156,10 @@ export class NotificationController {
     await this.notificationRepository.updateById(id, notification);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateNotification],
+  })
   @put('/notifications/{id}')
   @response(204, {
     description: 'Notification PUT success',
@@ -140,6 +171,10 @@ export class NotificationController {
     await this.notificationRepository.replaceById(id, notification);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteNotification],
+  })
   @del('/notifications/{id}')
   @response(204, {
     description: 'Notification DELETE success',

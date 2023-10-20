@@ -1,13 +1,8 @@
 import {Entity, model, property} from '@loopback/repository';
+import {Edge} from './edge.model';
 
 @model()
 export class Point extends Entity {
-  @property({
-    type: 'string',
-    required: true,
-  })
-  name: string;
-
   @property({
     type: 'string',
     id: true,
@@ -17,8 +12,16 @@ export class Point extends Entity {
 
   @property({
     type: 'string',
+    required: true,
   })
-  description?: string;
+  name: string;
+
+  @property({
+    type: 'array',
+    itemType: 'object',
+    default: [],
+  })
+  edges: Edge[];
 
   constructor(data?: Partial<Point>) {
     super(data);

@@ -187,4 +187,19 @@ export class AuthController {
   ) {
     return this.authService.passwordReset(passwordReset);
   }
+
+  @get('/auth/admin-token')
+  async generateAdminAccessToken() {
+    return this.authService.generateAdminAccessToken();
+  }
+
+  @get('/auth/client-token')
+  async generateClientAccessToken() {
+    return this.authService.generateClientAccessToken();
+  }
+
+  @get('/auth/driver-token')
+  async generateDriverAccessToken() {
+    return this.authService.generateDriverAccessToken();
+  }
 }

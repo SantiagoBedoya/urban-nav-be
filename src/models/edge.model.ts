@@ -1,9 +1,8 @@
 import {Entity, belongsTo, model, property} from '@loopback/repository';
 import {Point} from './point.model';
-import {Route} from './route.model';
 
 @model()
-export class RoutePoint extends Entity {
+export class Edge extends Entity {
   @property({
     type: 'string',
     id: true,
@@ -15,27 +14,18 @@ export class RoutePoint extends Entity {
     type: 'number',
     required: true,
   })
-  order: number;
-
-  @property({
-    type: 'number',
-    required: true,
-  })
-  distance: number;
-
-  @belongsTo(() => Route)
-  routeId: string;
+  weight: number;
 
   @belongsTo(() => Point)
   pointId: string;
 
-  constructor(data?: Partial<RoutePoint>) {
+  constructor(data?: Partial<Edge>) {
     super(data);
   }
 }
 
-export interface RoutePointRelations {
+export interface EdgeRelations {
   // describe navigational properties here
 }
 
-export type RoutePointWithRelations = RoutePoint & RoutePointRelations;
+export type EdgeWithRelations = Edge & EdgeRelations;

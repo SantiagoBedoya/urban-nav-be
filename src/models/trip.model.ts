@@ -1,6 +1,11 @@
-import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
+import {
+  Entity,
+  belongsTo,
+  hasMany,
+  model,
+  property,
+} from '@loopback/repository';
 import {TripComment} from './trip-comment.model';
-import {Route} from './route.model';
 import {User} from './user.model';
 
 @model()
@@ -32,9 +37,6 @@ export class Trip extends Entity {
 
   @hasMany(() => TripComment)
   tripComments: TripComment[];
-
-  @belongsTo(() => Route)
-  routeId: string;
 
   @belongsTo(() => User)
   driverId: string;

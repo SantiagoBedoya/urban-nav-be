@@ -64,6 +64,10 @@ export class UserController {
     return this.userService.createUser(user);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListUser],
+  })
   @get('/users/count')
   @response(200, {
     description: 'User model count',
@@ -121,6 +125,10 @@ export class UserController {
     });
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListUser],
+  })
   @get('/users')
   @response(200, {
     description: 'Array of User model instances',
@@ -137,6 +145,10 @@ export class UserController {
     return this.userRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateUser],
+  })
   @patch('/users')
   @response(200, {
     description: 'User PATCH success count',
@@ -156,6 +168,10 @@ export class UserController {
     return this.userRepository.updateAll(user, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListUser],
+  })
   @get('/users/{id}')
   @response(200, {
     description: 'User model instance',
@@ -172,6 +188,10 @@ export class UserController {
     return this.userRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListProfile],
+  })
   @get('/users/{id}/contacts')
   @response(200, {
     description: 'User contacts model instance',
@@ -189,6 +209,10 @@ export class UserController {
     return user.contacts;
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateUser],
+  })
   @patch('/users/{id}')
   @response(204, {
     description: 'User PATCH success',
@@ -207,6 +231,10 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListUser],
+  })
   @patch('/users/{id}/contacts')
   @response(204, {
     description: 'User contacts PATCH success',
@@ -229,6 +257,7 @@ export class UserController {
     user.contacts = contacts.items;
     await this.userRepository.updateById(id, user);
   }
+
 
 @post('/users/{id}/contacts')
 @response(201, {
@@ -253,6 +282,10 @@ async createContact(
   await this.userRepository.update(user);
   return newContact;
 }
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateUser],
+  })
 
   @put('/users/{id}')
   @response(204, {
@@ -265,6 +298,10 @@ async createContact(
     await this.userRepository.replaceById(id, user);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteUser],
+  })
   @del('/users/{id}')
   @response(204, {
     description: 'User DELETE success',

@@ -69,6 +69,10 @@ export class DriverUbicationController {
     return Promise.all(promises);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPoint],
+  })
   @post('/driver-ubications/nearest-driver')
   @response(200, {
     description: 'Drivers',
@@ -104,6 +108,10 @@ export class DriverUbicationController {
     return drivers;
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListDriverUbication],
+  })
   @get('/driver-ubications/count')
   @response(200, {
     description: 'DriverUbication model count',
@@ -115,6 +123,10 @@ export class DriverUbicationController {
     return this.driverUbicationRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListDriverUbication],
+  })
   @get('/driver-ubications')
   @response(200, {
     description: 'Array of DriverUbication model instances',
@@ -133,6 +145,10 @@ export class DriverUbicationController {
     return this.driverUbicationRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateDriverUbication],
+  })
   @patch('/driver-ubications')
   @response(200, {
     description: 'DriverUbication PATCH success count',
@@ -152,6 +168,10 @@ export class DriverUbicationController {
     return this.driverUbicationRepository.updateAll(driverUbication, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListDriverUbication],
+  })
   @get('/driver-ubications/{id}')
   @response(200, {
     description: 'DriverUbication model instance',
@@ -169,6 +189,10 @@ export class DriverUbicationController {
     return this.driverUbicationRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateDriverUbication],
+  })
   @patch('/driver-ubications/{id}')
   @response(204, {
     description: 'DriverUbication PATCH success',
@@ -187,6 +211,10 @@ export class DriverUbicationController {
     await this.driverUbicationRepository.updateById(id, driverUbication);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateDriverUbication],
+  })
   @put('/driver-ubications/{id}')
   @response(204, {
     description: 'DriverUbication PUT success',
@@ -198,6 +226,10 @@ export class DriverUbicationController {
     await this.driverUbicationRepository.replaceById(id, driverUbication);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteDriverUbication],
+  })
   @del('/driver-ubications/{id}')
   @response(204, {
     description: 'DriverUbication DELETE success',
