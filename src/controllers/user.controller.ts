@@ -230,6 +230,37 @@ export class UserController {
     await this.userRepository.updateById(id, user);
   }
 
+@post('/users/{id}/contacts')
+@response(201, {
+  description: 'Contact created successfully',
+})
+async createContact(
+  @param.path.string('id') id: string,
+  @requestBody({
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Contacts), // Supongamos que hay un modelo Contact
+      },
+    },
+  })
+  newContact: Contacts,
+): Promise<Contacts> {
+  const user = await this.userRepository.findById(id);
+  if (!user) {
+    throw new HttpErrors.NotFound('User not found');
+  }
+  console.log(user)
+  // Agregar el nuevo contacto a la lista de contactos del usuario
+  user.contacts?.push(newContact);
+
+  // Actualizar el usuario en la base de datos
+  await this.userRepository.update(user);
+
+  // Devolver el contacto creado
+  return newContact;
+}
+
+
   @put('/users/{id}')
   @response(204, {
     description: 'User PUT success',
