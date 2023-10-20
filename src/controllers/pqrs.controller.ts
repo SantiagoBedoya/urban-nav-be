@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {service} from '@loopback/core';
 import {
   Count,
@@ -18,6 +19,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {Pqrs} from '../models';
 import {PqrsRepository} from '../repositories';
 import {SendgridService} from '../services';
@@ -62,6 +64,10 @@ export class PqrsController {
     return this.pqrsRepository.create(pqrs);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPQRS],
+  })
   @get('/pqrs/count')
   @response(200, {
     description: 'Pqrs model count',
@@ -71,6 +77,10 @@ export class PqrsController {
     return this.pqrsRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPQRS],
+  })
   @get('/pqrs')
   @response(200, {
     description: 'Array of Pqrs model instances',
@@ -87,6 +97,10 @@ export class PqrsController {
     return this.pqrsRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePQRS],
+  })
   @patch('/pqrs')
   @response(200, {
     description: 'Pqrs PATCH success count',
@@ -106,6 +120,10 @@ export class PqrsController {
     return this.pqrsRepository.updateAll(pqrs, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPQRS],
+  })
   @get('/pqrs/{id}')
   @response(200, {
     description: 'Pqrs model instance',
@@ -122,6 +140,10 @@ export class PqrsController {
     return this.pqrsRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePQRS],
+  })
   @patch('/pqrs/{id}')
   @response(204, {
     description: 'Pqrs PATCH success',
@@ -140,6 +162,10 @@ export class PqrsController {
     await this.pqrsRepository.updateById(id, pqrs);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePQRS],
+  })
   @put('/pqrs/{id}')
   @response(204, {
     description: 'Pqrs PUT success',
@@ -151,6 +177,10 @@ export class PqrsController {
     await this.pqrsRepository.replaceById(id, pqrs);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeletePQRS],
+  })
   @del('/pqrs/{id}')
   @response(204, {
     description: 'Pqrs DELETE success',

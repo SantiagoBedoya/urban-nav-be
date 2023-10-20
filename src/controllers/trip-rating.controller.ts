@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,25 +8,30 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {TripRating} from '../models';
 import {TripRatingRepository} from '../repositories';
 
 export class TripRatingController {
   constructor(
     @repository(TripRatingRepository)
-    public tripRatingRepository : TripRatingRepository,
+    public tripRatingRepository: TripRatingRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateTripRating],
+  })
   @post('/trip-ratings')
   @response(200, {
     description: 'TripRating model instance',
@@ -47,6 +53,10 @@ export class TripRatingController {
     return this.tripRatingRepository.create(tripRating);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripRating],
+  })
   @get('/trip-ratings/count')
   @response(200, {
     description: 'TripRating model count',
@@ -58,6 +68,10 @@ export class TripRatingController {
     return this.tripRatingRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripRating],
+  })
   @get('/trip-ratings')
   @response(200, {
     description: 'Array of TripRating model instances',
@@ -76,6 +90,10 @@ export class TripRatingController {
     return this.tripRatingRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripRating],
+  })
   @patch('/trip-ratings')
   @response(200, {
     description: 'TripRating PATCH success count',
@@ -95,6 +113,10 @@ export class TripRatingController {
     return this.tripRatingRepository.updateAll(tripRating, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripRating],
+  })
   @get('/trip-ratings/{id}')
   @response(200, {
     description: 'TripRating model instance',
@@ -106,11 +128,16 @@ export class TripRatingController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(TripRating, {exclude: 'where'}) filter?: FilterExcludingWhere<TripRating>
+    @param.filter(TripRating, {exclude: 'where'})
+    filter?: FilterExcludingWhere<TripRating>,
   ): Promise<TripRating> {
     return this.tripRatingRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripRating],
+  })
   @patch('/trip-ratings/{id}')
   @response(204, {
     description: 'TripRating PATCH success',
@@ -129,6 +156,10 @@ export class TripRatingController {
     await this.tripRatingRepository.updateById(id, tripRating);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripRating],
+  })
   @put('/trip-ratings/{id}')
   @response(204, {
     description: 'TripRating PUT success',
@@ -140,6 +171,10 @@ export class TripRatingController {
     await this.tripRatingRepository.replaceById(id, tripRating);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteTripRating],
+  })
   @del('/trip-ratings/{id}')
   @response(204, {
     description: 'TripRating DELETE success',

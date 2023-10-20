@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -17,6 +18,7 @@ import {
   response,
 } from '@loopback/rest';
 import Graph from 'node-dijkstra';
+import {Permissions} from '../auth/permissions.enum';
 import {BestRouteReq, Point} from '../models';
 import {PointRepository} from '../repositories';
 
@@ -26,6 +28,10 @@ export class PointController {
     public pointRepository: PointRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreatePoint],
+  })
   @post('/points')
   @response(200, {
     description: 'Point model instance',
@@ -47,6 +53,10 @@ export class PointController {
     return this.pointRepository.create(point);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPoint],
+  })
   @post('/points/best-route')
   @response(200, {
     description: 'Find the best route',
@@ -85,6 +95,10 @@ export class PointController {
     });
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPoint],
+  })
   @get('/points/count')
   @response(200, {
     description: 'Point model count',
@@ -94,6 +108,10 @@ export class PointController {
     return this.pointRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPoint],
+  })
   @get('/points')
   @response(200, {
     description: 'Array of Point model instances',
@@ -112,6 +130,10 @@ export class PointController {
     });
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePoint],
+  })
   @patch('/points')
   @response(200, {
     description: 'Point PATCH success count',
@@ -131,6 +153,10 @@ export class PointController {
     return this.pointRepository.updateAll(point, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListPoint],
+  })
   @get('/points/{id}')
   @response(200, {
     description: 'Point model instance',
@@ -148,6 +174,10 @@ export class PointController {
     return this.pointRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePoint],
+  })
   @patch('/points/{id}')
   @response(204, {
     description: 'Point PATCH success',
@@ -166,6 +196,10 @@ export class PointController {
     await this.pointRepository.updateById(id, point);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdatePoint],
+  })
   @put('/points/{id}')
   @response(204, {
     description: 'Point PUT success',
@@ -177,6 +211,10 @@ export class PointController {
     await this.pointRepository.replaceById(id, point);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeletePoint],
+  })
   @del('/points/{id}')
   @response(204, {
     description: 'Point DELETE success',
