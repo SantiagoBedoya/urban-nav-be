@@ -71,7 +71,7 @@ export class DriverUbicationController {
 
   @authenticate({
     strategy: 'auth',
-    options: [Permissions.ListDriverUbication],
+    options: [Permissions.ListPoint],
   })
   @post('/driver-ubications/nearest-driver')
   @response(200, {
