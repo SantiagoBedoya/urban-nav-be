@@ -239,7 +239,7 @@ async createContact(
   @requestBody({
     content: {
       'application/json': {
-        schema: getModelSchemaRef(Contacts), // Supongamos que hay un modelo Contact
+        schema: getModelSchemaRef(Contacts),
       },
     },
   })
@@ -249,17 +249,10 @@ async createContact(
   if (!user) {
     throw new HttpErrors.NotFound('User not found');
   }
-  console.log(user)
-  // Agregar el nuevo contacto a la lista de contactos del usuario
   user.contacts?.push(newContact);
-
-  // Actualizar el usuario en la base de datos
   await this.userRepository.update(user);
-
-  // Devolver el contacto creado
   return newContact;
 }
-
 
   @put('/users/{id}')
   @response(204, {
