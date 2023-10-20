@@ -7,21 +7,21 @@ import {
   getModelSchemaRef,
 } from '@loopback/rest';
 import {
-  Route,
+  Edge,
   Point,
 } from '../models';
-import {RouteRepository} from '../repositories';
+import {EdgeRepository} from '../repositories';
 
-export class RoutePointController {
+export class EdgePointController {
   constructor(
-    @repository(RouteRepository)
-    public routeRepository: RouteRepository,
+    @repository(EdgeRepository)
+    public edgeRepository: EdgeRepository,
   ) { }
 
-  @get('/routes/{id}/point', {
+  @get('/edges/{id}/point', {
     responses: {
       '200': {
-        description: 'Point belonging to Route',
+        description: 'Point belonging to Edge',
         content: {
           'application/json': {
             schema: getModelSchemaRef(Point),
@@ -31,8 +31,8 @@ export class RoutePointController {
     },
   })
   async getPoint(
-    @param.path.string('id') id: typeof Route.prototype._id,
+    @param.path.string('id') id: typeof Edge.prototype._id,
   ): Promise<Point> {
-    return this.routeRepository.origin(id);
+    return this.edgeRepository.point(id);
   }
 }
