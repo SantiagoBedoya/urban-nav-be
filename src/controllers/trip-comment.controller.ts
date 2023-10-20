@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,25 +8,30 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {TripComment} from '../models';
 import {TripCommentRepository} from '../repositories';
 
 export class TripCommentController {
   constructor(
     @repository(TripCommentRepository)
-    public tripCommentRepository : TripCommentRepository,
+    public tripCommentRepository: TripCommentRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateTripComment],
+  })
   @post('/trip-comments')
   @response(200, {
     description: 'TripComment model instance',
@@ -47,6 +53,10 @@ export class TripCommentController {
     return this.tripCommentRepository.create(tripComment);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripComment],
+  })
   @get('/trip-comments/count')
   @response(200, {
     description: 'TripComment model count',
@@ -58,6 +68,10 @@ export class TripCommentController {
     return this.tripCommentRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripComment],
+  })
   @get('/trip-comments')
   @response(200, {
     description: 'Array of TripComment model instances',
@@ -76,6 +90,10 @@ export class TripCommentController {
     return this.tripCommentRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripComment],
+  })
   @patch('/trip-comments')
   @response(200, {
     description: 'TripComment PATCH success count',
@@ -95,6 +113,10 @@ export class TripCommentController {
     return this.tripCommentRepository.updateAll(tripComment, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripComment],
+  })
   @get('/trip-comments/{id}')
   @response(200, {
     description: 'TripComment model instance',
@@ -106,11 +128,16 @@ export class TripCommentController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(TripComment, {exclude: 'where'}) filter?: FilterExcludingWhere<TripComment>
+    @param.filter(TripComment, {exclude: 'where'})
+    filter?: FilterExcludingWhere<TripComment>,
   ): Promise<TripComment> {
     return this.tripCommentRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripComment],
+  })
   @patch('/trip-comments/{id}')
   @response(204, {
     description: 'TripComment PATCH success',
@@ -129,6 +156,10 @@ export class TripCommentController {
     await this.tripCommentRepository.updateById(id, tripComment);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateTripComment],
+  })
   @put('/trip-comments/{id}')
   @response(204, {
     description: 'TripComment PUT success',
@@ -140,6 +171,10 @@ export class TripCommentController {
     await this.tripCommentRepository.replaceById(id, tripComment);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteTripComment],
+  })
   @del('/trip-comments/{id}')
   @response(204, {
     description: 'TripComment DELETE success',

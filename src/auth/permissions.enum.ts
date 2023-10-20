@@ -74,4 +74,10 @@ export enum Permissions {
   CreateDriverUbication,
   UpdateDriverUbication,
   DeleteDriverUbication,
+
+  // Notification
+  ListNotification,
+  CreateNotification,
+  UpdateNotification,
+  DeleteNotification,
 }

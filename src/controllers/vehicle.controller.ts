@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {
   Count,
   CountSchema,
@@ -7,25 +8,30 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
+import {Permissions} from '../auth/permissions.enum';
 import {Vehicle} from '../models';
 import {VehicleRepository} from '../repositories';
 
 export class VehicleController {
   constructor(
     @repository(VehicleRepository)
-    public vehicleRepository : VehicleRepository,
+    public vehicleRepository: VehicleRepository,
   ) {}
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateVehicle],
+  })
   @post('/vehicles')
   @response(200, {
     description: 'Vehicle model instance',
@@ -47,17 +53,23 @@ export class VehicleController {
     return this.vehicleRepository.create(vehicle);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListVehicle],
+  })
   @get('/vehicles/count')
   @response(200, {
     description: 'Vehicle model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Vehicle) where?: Where<Vehicle>,
-  ): Promise<Count> {
+  async count(@param.where(Vehicle) where?: Where<Vehicle>): Promise<Count> {
     return this.vehicleRepository.count(where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListVehicle],
+  })
   @get('/vehicles')
   @response(200, {
     description: 'Array of Vehicle model instances',
@@ -76,6 +88,10 @@ export class VehicleController {
     return this.vehicleRepository.find(filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateVehicle],
+  })
   @patch('/vehicles')
   @response(200, {
     description: 'Vehicle PATCH success count',
@@ -95,6 +111,10 @@ export class VehicleController {
     return this.vehicleRepository.updateAll(vehicle, where);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListVehicle],
+  })
   @get('/vehicles/{id}')
   @response(200, {
     description: 'Vehicle model instance',
@@ -106,11 +126,16 @@ export class VehicleController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Vehicle, {exclude: 'where'}) filter?: FilterExcludingWhere<Vehicle>
+    @param.filter(Vehicle, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Vehicle>,
   ): Promise<Vehicle> {
     return this.vehicleRepository.findById(id, filter);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateVehicle],
+  })
   @patch('/vehicles/{id}')
   @response(204, {
     description: 'Vehicle PATCH success',
@@ -129,6 +154,10 @@ export class VehicleController {
     await this.vehicleRepository.updateById(id, vehicle);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateVehicle],
+  })
   @put('/vehicles/{id}')
   @response(204, {
     description: 'Vehicle PUT success',
@@ -140,6 +169,10 @@ export class VehicleController {
     await this.vehicleRepository.replaceById(id, vehicle);
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.DeleteVehicle],
+  })
   @del('/vehicles/{id}')
   @response(204, {
     description: 'Vehicle DELETE success',

@@ -6,7 +6,10 @@ const userSchema = new mongoose.Schema(
     lastName: String,
     email: String,
     password: String,
-    roleId: String,
+    roleId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Role',
+    },
   },
   {collection: 'User'},
 );

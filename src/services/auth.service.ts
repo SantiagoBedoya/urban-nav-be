@@ -12,13 +12,19 @@ import {
   SignUpCredentials,
   ValidateOtp,
 } from '../models';
-import {Code2FaRepository, UserRepository} from '../repositories';
+import {
+  Code2FaRepository,
+  RoleRepository,
+  UserRepository,
+} from '../repositories';
 import {SendgridService} from './sendgrid.service';
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(
     @repository(UserRepository)
     private readonly userRepository: UserRepository,
+    @repository(RoleRepository)
+    private readonly roleRepository: RoleRepository,
     @repository(Code2FaRepository)
     private readonly code2faRepository: Code2FaRepository,
     @service(SendgridService)
@@ -202,18 +208,26 @@ export class AuthService {
       throw new HttpErrors.InternalServerError('Something went wrong');
     }
 
-    const accessToken = jwt.sign(
-      {
-        userId: user._id,
-        roleId: role._id,
-        permission: role.permissions,
-      },
-      process.env.JWT_SECRET!,
+    const accessToken = this.generateAccessToken(
+      user._id!,
+      role._id!,
+      role.permissions,
     );
 
     return {
       accessToken,
     };
+  }
+
+  generateAccessToken(userId: string, roleId: string, permission: number[]) {
+    return jwt.sign(
+      {
+        userId,
+        roleId,
+        permission,
+      },
+      process.env.JWT_SECRET!,
+    );
   }
 
   async generateOTP(userId: string) {
@@ -257,17 +271,65 @@ export class AuthService {
       throw new HttpErrors.Unauthorized('Invalid passcode');
     }
 
-    const accessToken = jwt.sign(
-      {
-        userId: user._id,
-        roleId: role._id,
-        permission: role.permissions,
-      },
-      process.env.JWT_SECRET!,
+    const accessToken = this.generateAccessToken(
+      user._id!,
+      role._id!,
+      role.permissions,
     );
 
     return {
       accessToken,
+    };
+  }
+
+  async generateAdminAccessToken() {
+    const user = await this.userRepository.findOne({
+      where: {
+        roleId: process.env.ADMIN_ROLE_ID,
+      },
+      include: ['role'],
+    });
+    const at = this.generateAccessToken(
+      user!._id!,
+      user!.roleId,
+      user!.role.permissions,
+    );
+    return {
+      accessToken: at,
+    };
+  }
+
+  async generateDriverAccessToken() {
+    const user = await this.userRepository.findOne({
+      where: {
+        roleId: process.env.DRIVER_ROLE_ID,
+      },
+      include: ['role'],
+    });
+    const at = this.generateAccessToken(
+      user!._id!,
+      user!.roleId,
+      user!.role.permissions,
+    );
+    return {
+      accessToken: at,
+    };
+  }
+
+  async generateClientAccessToken() {
+    const user = await this.userRepository.findOne({
+      where: {
+        roleId: process.env.CLIENT_ROLE_ID,
+      },
+      include: ['role'],
+    });
+    const at = this.generateAccessToken(
+      user!._id!,
+      user!.roleId,
+      user!.role.permissions,
+    );
+    return {
+      accessToken: at,
     };
   }
 }

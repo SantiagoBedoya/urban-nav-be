@@ -1,9 +1,6 @@
 export * from './auth.controller';
-export * from './driver-ubication-point.controller';
-export * from './driver-ubication-user.controller';
 export * from './driver-ubication.controller';
 export * from './notification.controller';
-export * from './ping.controller';
 export * from './point.controller';
 export * from './pqrs.controller';
 export * from './role-user.controller';
@@ -20,4 +17,3 @@ export * from './user-trip-comment.controller';
 export * from './user.controller';
 export * from './vehicle-user.controller';
 export * from './vehicle.controller';
-export * from './edge-point.controller';
