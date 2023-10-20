@@ -1,7 +1,7 @@
 import {Model, model, property} from '@loopback/repository';
 
 @model()
-export class PointsForDijkstra extends Model {
+export class BestRouteReq extends Model {
   @property({
     type: 'string',
     required: true,
@@ -14,13 +14,14 @@ export class PointsForDijkstra extends Model {
   })
   destination: string;
 
-  constructor(data?: Partial<PointsForDijkstra>) {
+
+  constructor(data?: Partial<BestRouteReq>) {
     super(data);
   }
 }
 
-export interface PointsForDijkstraRelations {
+export interface BestRouteReqRelations {
   // describe navigational properties here
 }
 
-export type PointsForDijkstraWithRelations = PointsForDijkstra & PointsForDijkstraRelations;
+export type BestRouteReqWithRelations = BestRouteReq & BestRouteReqRelations;
