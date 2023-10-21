@@ -37,7 +37,7 @@ export class UserController {
     public userService: UsersService,
     @service(CloudinaryService)
     public cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   @authenticate({
     strategy: 'auth',
@@ -259,29 +259,31 @@ export class UserController {
   }
 
 
-@post('/users/{id}/contacts')
-@response(201, {
-  description: 'Contact created successfully',
-})
-async createContact(
-  @param.path.string('id') id: string,
-  @requestBody({
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(Contacts),
-      },
-    },
+  @post('/users/{id}/contacts')
+  @response(201, {
+    description: 'Contact created successfully',
   })
-  newContact: Contacts,
-): Promise<Contacts> {
-  const user = await this.userRepository.findById(id);
-  if (!user) {
-    throw new HttpErrors.NotFound('User not found');
+  async createContact(
+    @param.path.string('id') id: string,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Contacts),
+        },
+      },
+    })
+    newContacts: Contacts,
+  ): Promise<Contacts> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new HttpErrors.NotFound('User not found');
+    }
+    newContacts.items.forEach(contact => {
+      user.contacts?.push(contact)
+    })
+    await this.userRepository.update(user);
+    return newContacts;
   }
-  user.contacts?.push(newContact);
-  await this.userRepository.update(user);
-  return newContact;
-}
   @authenticate({
     strategy: 'auth',
     options: [Permissions.UpdateUser],
