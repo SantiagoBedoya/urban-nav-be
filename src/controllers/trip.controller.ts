@@ -1,13 +1,15 @@
 import {authenticate} from '@loopback/authentication';
+import {inject, service} from '@loopback/core';
 import {
   Count,
   CountSchema,
   Filter,
   FilterExcludingWhere,
-  repository,
   Where,
+  repository,
 } from '@loopback/repository';
 import {
+  HttpErrors,
   del,
   get,
   getModelSchemaRef,
@@ -18,14 +20,23 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
-import {Trip} from '../models';
-import {TripRepository} from '../repositories';
+import {TripStatus} from '../enums/trip-status.enum';
+import {Notification, RequestTrip, Trip} from '../models';
+import {NotificationRepository, TripRepository} from '../repositories';
+import {DriverUbicationService, PointService} from '../services';
 
 export class TripController {
   constructor(
     @repository(TripRepository)
     public tripRepository: TripRepository,
+    @repository(NotificationRepository)
+    public notificationRepository: NotificationRepository,
+    @service(PointService)
+    public pointService: PointService,
+    @service(DriverUbicationService)
+    public driverUbicationService: DriverUbicationService,
   ) {}
 
   @authenticate({
@@ -64,6 +75,59 @@ export class TripController {
   })
   async count(@param.where(Trip) where?: Where<Trip>): Promise<Count> {
     return this.tripRepository.count(where);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateTrip],
+  })
+  @post('trips/request')
+  @response(200, {
+    description: 'Request trip',
+  })
+  async requestTrip(
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(RequestTrip, {
+            title: 'RequestTrip',
+          }),
+        },
+      },
+    })
+    data: RequestTrip,
+  ) {
+    const nearestDrivers = await this.driverUbicationService.findNearestDrivers(
+      data.origin,
+    );
+    if (nearestDrivers.length === 0) {
+      throw new HttpErrors.BadRequest(
+        'There are no drivers near your point of origin.',
+      );
+    }
+    const bestRoute = await this.pointService.findBestRoute(
+      data.origin,
+      data.destination,
+    );
+    const createdTrip = await this.tripRepository.create({
+      route: bestRoute.map(point => point.name).join(','),
+      status: TripStatus.PENDING,
+      clientId: user.userId,
+    });
+    const promises: Promise<Notification>[] = [];
+    nearestDrivers.forEach(driver => {
+      promises.push(
+        this.notificationRepository.create({
+          title: 'New Trip Request',
+          description: 'A new trip request is available to take',
+          link: process.env.FRONTEND_URL + '/trips/' + createdTrip._id,
+          userId: driver._id,
+        }),
+      );
+    });
+    await Promise.all(promises);
   }
 
   @authenticate({

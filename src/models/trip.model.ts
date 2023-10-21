@@ -19,21 +19,23 @@ export class Trip extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  status: string;
+  status?: string;
 
   @property({
     type: 'date',
-    required: true,
   })
-  startDate: string;
+  startDate?: string;
 
   @property({
     type: 'date',
-    required: true,
   })
-  endDate: string;
+  endDate?: string;
+
+  @property({
+    type: 'string',
+  })
+  route?: string;
 
   @hasMany(() => TripComment)
   tripComments: TripComment[];
