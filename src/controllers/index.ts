@@ -17,3 +17,4 @@ export * from './user-trip-comment.controller';
 export * from './user.controller';
 export * from './vehicle-user.controller';
 export * from './vehicle.controller';
+export * from './notification-user.controller';

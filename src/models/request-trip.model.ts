@@ -1,7 +1,7 @@
 import {Model, model, property} from '@loopback/repository';
 
 @model()
-export class BestRouteReq extends Model {
+export class RequestTrip extends Model {
   @property({
     type: 'string',
     required: true,
@@ -14,14 +14,13 @@ export class BestRouteReq extends Model {
   })
   destination: string;
 
-
-  constructor(data?: Partial<BestRouteReq>) {
+  constructor(data?: Partial<RequestTrip>) {
     super(data);
   }
 }
 
-export interface BestRouteReqRelations {
+export interface RequestTripRelations {
   // describe navigational properties here
 }
 
-export type BestRouteReqWithRelations = BestRouteReq & BestRouteReqRelations;
+export type RequestTripWithRelations = RequestTrip & RequestTripRelations;

@@ -1,4 +1,6 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {NotificationStatus} from '../enums/notification-status.enum';
+import {User} from './user.model';
 
 @model()
 export class Notification extends Entity {
@@ -29,9 +31,9 @@ export class Notification extends Entity {
 
   @property({
     type: 'string',
-    required: true,
+    default: NotificationStatus.NEW,
   })
-  status: string;
+  status?: string;
 
   @property({
     type: 'date',
@@ -39,6 +41,8 @@ export class Notification extends Entity {
   })
   date?: string;
 
+  @belongsTo(() => User)
+  userId: string;
 
   constructor(data?: Partial<Notification>) {
     super(data);

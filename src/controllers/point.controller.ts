@@ -17,9 +17,8 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
-import Graph from 'node-dijkstra';
 import {Permissions} from '../auth/permissions.enum';
-import {BestRouteReq, Point} from '../models';
+import {Point} from '../models';
 import {PointRepository} from '../repositories';
 
 export class PointController {
@@ -51,48 +50,6 @@ export class PointController {
     point: Omit<Point, '_id'>,
   ): Promise<Point> {
     return this.pointRepository.create(point);
-  }
-
-  @authenticate({
-    strategy: 'auth',
-    options: [Permissions.ListPoint],
-  })
-  @post('/points/best-route')
-  @response(200, {
-    description: 'Find the best route',
-  })
-  async bestRoute(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(BestRouteReq, {
-            title: 'BestRouteReq',
-          }),
-        },
-      },
-    })
-    bestRouteReq: BestRouteReq,
-  ) {
-    const points = await this.pointRepository.find();
-    const route = new Graph();
-    points.forEach(point => {
-      const neighbors: {
-        [key: string]: number;
-      } = {};
-      point.edges.forEach(edge => {
-        neighbors[edge.pointId] = edge.weight;
-      });
-      route.addNode(point._id!, neighbors);
-    });
-    const bestRoute = route.path(bestRouteReq.origin, bestRouteReq.destination);
-    return this.pointRepository.find({
-      where: {
-        _id: {inq: bestRoute as string[]},
-      },
-      fields: {
-        edges: false,
-      },
-    });
   }
 
   @authenticate({
