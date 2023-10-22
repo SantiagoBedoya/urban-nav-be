@@ -1,8 +1,8 @@
 import {authenticate} from '@loopback/authentication';
+import {inject} from '@loopback/core';
 import {
   Count,
   CountSchema,
-  Filter,
   FilterExcludingWhere,
   repository,
   Where,
@@ -18,6 +18,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {TripComment} from '../models';
 import {TripCommentRepository} from '../repositories';
@@ -49,8 +50,13 @@ export class TripCommentController {
       },
     })
     tripComment: Omit<TripComment, '_id'>,
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
   ): Promise<TripComment> {
-    return this.tripCommentRepository.create(tripComment);
+    return this.tripCommentRepository.create({
+      ...tripComment,
+      publisherId: user.userId,
+    });
   }
 
   @authenticate({
@@ -85,9 +91,43 @@ export class TripCommentController {
     },
   })
   async find(
-    @param.filter(TripComment) filter?: Filter<TripComment>,
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
   ): Promise<TripComment[]> {
-    return this.tripCommentRepository.find(filter);
+    return this.tripCommentRepository.find({
+      include: [
+        {
+          relation: 'publisher',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        {
+          relation: 'receiver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      ],
+      where: {
+        or: [
+          {
+            publisherId: user.userId,
+          },
+          {
+            receiverId: user.userId,
+          },
+        ],
+      },
+    });
   }
 
   @authenticate({

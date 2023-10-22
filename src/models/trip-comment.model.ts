@@ -1,4 +1,4 @@
-import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {Entity, belongsTo, model, property} from '@loopback/repository';
 import {Trip} from './trip.model';
 import {User} from './user.model';
 
@@ -13,14 +13,15 @@ export class TripComment extends Entity {
 
   @property({
     type: 'string',
+    required: true,
   })
-  comment?: string;
+  comment: string;
 
   @property({
     type: 'date',
-    required: true,
+    default: new Date(),
   })
-  date: string;
+  date?: string;
 
   @belongsTo(() => Trip)
   tripId: string;
@@ -30,11 +31,6 @@ export class TripComment extends Entity {
 
   @belongsTo(() => User)
   receiverId: string;
-
-  @property({
-    type: 'string',
-  })
-  userId?: string;
 
   constructor(data?: Partial<TripComment>) {
     super(data);

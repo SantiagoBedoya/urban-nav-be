@@ -1,12 +1,6 @@
-import {
-  Entity,
-  belongsTo,
-  hasMany,
-  model,
-  property,
-} from '@loopback/repository';
+import {Entity, belongsTo, model, property} from '@loopback/repository';
+import {ContactItem} from './contacts.model';
 import {Role} from './role.model';
-import {TripComment} from './trip-comment.model';
 
 @model()
 export class User extends Entity {
@@ -56,13 +50,10 @@ export class User extends Entity {
     itemType: 'object',
     default: [],
   })
-  contacts?: object[];
+  contacts?: ContactItem[];
 
   @belongsTo(() => Role)
   roleId: string;
-
-  @hasMany(() => TripComment)
-  tripComments: TripComment[];
 
   constructor(data?: Partial<User>) {
     super(data);
