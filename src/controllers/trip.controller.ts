@@ -235,12 +235,13 @@ export class TripController {
     if (!vehicle) {
       throw new HttpErrors.NotFound('This driver does not have a vehicle');
     }
-    if (!trip.client.contacts || trip.client.contacts.length === 0) {
-      throw new HttpErrors.BadRequest('You do not have registered contacts');
+    let to = process.env.ADMIN_EMAIL!;
+    if (trip.client.contacts && trip.client.contacts.length > 0) {
+      to = trip.client.contacts[0].email;
     }
     await this.sendgridService.sendMail(
       'PANIC!',
-      trip.client.contacts[0].email,
+      to,
       process.env.EMAIL_PANIC_TEMPLATE_ID!,
       {
         passenger: `${trip.client.firstName} ${trip.client.lastName}`,
