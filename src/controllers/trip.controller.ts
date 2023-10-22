@@ -3,7 +3,6 @@ import {inject, service} from '@loopback/core';
 import {
   Count,
   CountSchema,
-  Filter,
   FilterExcludingWhere,
   Where,
   repository,
@@ -146,8 +145,22 @@ export class TripController {
       },
     },
   })
-  async find(@param.filter(Trip) filter?: Filter<Trip>): Promise<Trip[]> {
-    return this.tripRepository.find(filter);
+  async find(
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+  ): Promise<Trip[]> {
+    return this.tripRepository.find({
+      where: {
+        or: [
+          {
+            clientId: user.userId,
+          },
+          {
+            driverId: user.userId,
+          },
+        ],
+      },
+    });
   }
 
   @authenticate({
