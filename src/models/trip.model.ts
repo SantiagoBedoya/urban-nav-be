@@ -53,6 +53,8 @@ export class Trip extends Entity {
 
 export interface TripRelations {
   // describe navigational properties here
+  client: User;
+  driver: User;
 }
 
 export type TripWithRelations = Trip & TripRelations;

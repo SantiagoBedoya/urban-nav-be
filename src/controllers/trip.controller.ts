@@ -1,12 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {inject, service} from '@loopback/core';
-import {
-  Count,
-  CountSchema,
-  FilterExcludingWhere,
-  Where,
-  repository,
-} from '@loopback/repository';
+import {Count, CountSchema, Where, repository} from '@loopback/repository';
 import {
   HttpErrors,
   del,
@@ -23,19 +17,31 @@ import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {TripStatus} from '../enums/trip-status.enum';
 import {Notification, RequestTrip, Trip} from '../models';
-import {NotificationRepository, TripRepository} from '../repositories';
-import {DriverUbicationService, PointService} from '../services';
+import {
+  NotificationRepository,
+  TripRepository,
+  VehicleRepository,
+} from '../repositories';
+import {
+  DriverUbicationService,
+  PointService,
+  SendgridService,
+} from '../services';
 
 export class TripController {
   constructor(
     @repository(TripRepository)
     public tripRepository: TripRepository,
+    @repository(VehicleRepository)
+    public vehicleRepository: VehicleRepository,
     @repository(NotificationRepository)
     public notificationRepository: NotificationRepository,
     @service(PointService)
     public pointService: PointService,
     @service(DriverUbicationService)
     public driverUbicationService: DriverUbicationService,
+    @service(SendgridService)
+    public sendgridService: SendgridService,
   ) {}
 
   @authenticate({
@@ -199,11 +205,51 @@ export class TripController {
       },
     },
   })
-  async findById(
-    @param.path.string('id') id: string,
-    @param.filter(Trip, {exclude: 'where'}) filter?: FilterExcludingWhere<Trip>,
-  ): Promise<Trip> {
-    return this.tripRepository.findById(id, filter);
+  async findById(@param.path.string('id') id: string): Promise<Trip> {
+    return this.tripRepository.findById(id);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTrip],
+  })
+  @get('/trips/{id}/panic')
+  @response(200, {
+    description: 'Trip panic',
+  })
+  async tripPanic(@param.path.string('id') id: string) {
+    const trip = await this.tripRepository.findById(id, {
+      include: ['client', 'driver'],
+    });
+    if (!trip) {
+      throw new HttpErrors.NotFound('Trip not found');
+    }
+    if (trip.status !== TripStatus.ACTIVE) {
+      throw new HttpErrors.BadRequest('The trip must be active');
+    }
+    const vehicle = await this.vehicleRepository.findOne({
+      where: {
+        userId: trip.driver._id,
+      },
+    });
+    if (!vehicle) {
+      throw new HttpErrors.NotFound('This driver does not have a vehicle');
+    }
+    let to = process.env.ADMIN_EMAIL!;
+    if (trip.client.contacts && trip.client.contacts.length > 0) {
+      to = trip.client.contacts[0].email;
+    }
+    await this.sendgridService.sendMail(
+      'PANIC!',
+      to,
+      process.env.EMAIL_PANIC_TEMPLATE_ID!,
+      {
+        passenger: `${trip.client.firstName} ${trip.client.lastName}`,
+        route: trip.route!,
+        driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
+        vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
+      },
+    );
   }
 
   @authenticate({
