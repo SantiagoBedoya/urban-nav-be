@@ -3,4 +3,5 @@ export enum TripStatus {
   ACTIVE = 'ACTIVE',
   FINISHED = 'FINISHED',
   PANIC = 'PANIC',
+  CANCELLED = 'CANCELLED',
 }
