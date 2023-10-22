@@ -92,6 +92,7 @@ export class UserController {
         password: false,
         secret2fa: false,
       },
+      include: ['role'],
     });
   }
 
