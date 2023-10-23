@@ -9,3 +9,4 @@ export * from './trip-rating.controller';
 export * from './trip.controller';
 export * from './user.controller';
 export * from './vehicle.controller';
+export * from './user-vehicle.controller';
