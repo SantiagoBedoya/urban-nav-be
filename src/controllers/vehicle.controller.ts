@@ -11,6 +11,7 @@ import {
   del,
   get,
   getModelSchemaRef,
+  HttpErrors,
   param,
   patch,
   post,
@@ -20,12 +21,14 @@ import {
 } from '@loopback/rest';
 import {Permissions} from '../auth/permissions.enum';
 import {Vehicle} from '../models';
-import {VehicleRepository} from '../repositories';
+import {UserRepository, VehicleRepository} from '../repositories';
 
 export class VehicleController {
   constructor(
     @repository(VehicleRepository)
     public vehicleRepository: VehicleRepository,
+    @repository(UserRepository)
+    public userRepository: UserRepository
   ) {}
 
   @authenticate({
@@ -50,7 +53,15 @@ export class VehicleController {
     })
     vehicle: Omit<Vehicle, '_id'>,
   ): Promise<Vehicle> {
-    return this.vehicleRepository.create(vehicle);
+    const user = await this.userRepository.findById(vehicle.userId);
+    if (!user) {
+      throw new HttpErrors.NotFound('User not found');
+    }
+    const infoVehicle = await this.vehicleRepository.create(vehicle);
+    user.vehicleId = infoVehicle._id!;
+    await this.userRepository.update(user);
+
+    return infoVehicle;
   }
 
   @authenticate({
