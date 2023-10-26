@@ -130,6 +130,26 @@ export class TripCommentController {
     });
   }
 
+  @get('/trip-comments/by-driver/{driverId}')
+  @response(200, {
+    description: 'Array of TripComment model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(TripComment, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async getDriverComments(@param.path.string('driverId') driverId: string) {
+    return this.tripCommentRepository.find({
+      where: {
+        receiverId: driverId,
+      },
+    });
+  }
+
   @authenticate({
     strategy: 'auth',
     options: [Permissions.UpdateTripComment],
