@@ -22,14 +22,18 @@ export class PointService {
       });
       route.addNode(point._id!, neighbors);
     });
-    const bestRoute = route.path(origin, destination);
-    return this.pointRepository.find({
+    const {path, cost} = route.path(origin, destination, {cost: true}) as {
+      path: string[];
+      cost: number;
+    };
+    const bestRoutePoints = await this.pointRepository.find({
       where: {
-        _id: {inq: bestRoute as string[]},
+        _id: {inq: path as string[]},
       },
       fields: {
         edges: false,
       },
     });
+    return {points: bestRoutePoints, cost};
   }
 }

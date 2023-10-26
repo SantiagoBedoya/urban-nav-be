@@ -18,6 +18,11 @@ export class Trip extends Entity {
   _id?: string;
 
   @property({
+    type: 'number',
+  })
+  price?: number;
+
+  @property({
     type: 'string',
   })
   status?: string;

@@ -16,7 +16,7 @@ import {
 import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {TripStatus} from '../enums/trip-status.enum';
-import {Notification, RequestTrip, Trip} from '../models';
+import {RequestTrip, Trip} from '../models';
 import {
   NotificationRepository,
   TripRepository,
@@ -26,6 +26,7 @@ import {
   DriverUbicationService,
   PointService,
   SendgridService,
+  WebsocketService,
 } from '../services';
 
 export class TripController {
@@ -42,6 +43,8 @@ export class TripController {
     public driverUbicationService: DriverUbicationService,
     @service(SendgridService)
     public sendgridService: SendgridService,
+    @service(WebsocketService)
+    public websocketService: WebsocketService,
   ) {}
 
   @authenticate({
@@ -112,7 +115,7 @@ export class TripController {
         'There are no drivers near your point of origin.',
       );
     }
-    const bestRoute = await this.pointService.findBestRoute(
+    const {points: bestRoute, cost} = await this.pointService.findBestRoute(
       data.origin,
       data.destination,
     );
@@ -120,19 +123,15 @@ export class TripController {
       route: bestRoute.map(point => point.name).join(','),
       status: TripStatus.PENDING,
       clientId: user.userId,
+      price: +process.env.PRICE_PER_KM! * cost,
     });
-    const promises: Promise<Notification>[] = [];
-    nearestDrivers.forEach(driver => {
-      promises.push(
-        this.notificationRepository.create({
-          title: 'New Trip Request',
-          description: 'A new trip request is available to take',
-          link: process.env.FRONTEND_URL + '/trips/' + createdTrip._id,
-          userId: driver._id,
-        }),
-      );
+    const driversIds = nearestDrivers.map(driver => driver._id!);
+    await this.websocketService.sendNotification(driversIds, {
+      message: 'A new trip request is available to take',
+      tripId: createdTrip._id!,
+      clientId: createdTrip.clientId!,
+      price: createdTrip.price!.toString(),
     });
-    await Promise.all(promises);
   }
 
   @authenticate({
@@ -207,6 +206,28 @@ export class TripController {
   })
   async findById(@param.path.string('id') id: string): Promise<Trip> {
     return this.tripRepository.findById(id);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.AcceptTrip],
+  })
+  @get('/trips/{id}/accept')
+  @response(200, {
+    description: 'Trip model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Trip, {includeRelations: true}),
+      },
+    },
+  })
+  async acceptTrip(
+    @param.path.string('id') id: string,
+    @inject(SecurityBindings.USER) user: UserProfile,
+  ) {
+    return this.tripRepository.updateById(id, {
+      driverId: user.userId,
+    });
   }
 
   @authenticate({

@@ -74,4 +74,6 @@ export enum Permissions {
   CreateNotification,
   UpdateNotification,
   DeleteNotification,
+
+  AcceptTrip,
 }
