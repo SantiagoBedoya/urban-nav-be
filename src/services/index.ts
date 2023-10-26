@@ -5,3 +5,4 @@ export * from './twilio.service';
 export * from './users.service';
 export * from './point.service';
 export * from './driver-ubication.service';
+export * from './websocket.service';
