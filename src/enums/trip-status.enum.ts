@@ -1,7 +1,8 @@
 export enum TripStatus {
-  PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
   FINISHED = 'FINISHED',
+  ASSIGNED = 'ASSIGNED',
+  PENDING = 'PENDING',
   PANIC = 'PANIC',
   CANCELLED = 'CANCELLED',
 }

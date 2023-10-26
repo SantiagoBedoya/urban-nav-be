@@ -115,23 +115,15 @@ export class TripController {
         'There are no drivers near your point of origin.',
       );
     }
-    const {points: bestRoute, cost} = await this.pointService.findBestRoute(
+    const {points, cost} = await this.pointService.findBestRoute(
       data.origin,
       data.destination,
     );
-    const createdTrip = await this.tripRepository.create({
-      route: bestRoute.map(point => point.name).join(','),
-      status: TripStatus.PENDING,
-      clientId: user.userId,
+    return {
+      points,
+      distance: cost,
       price: +process.env.PRICE_PER_KM! * cost,
-    });
-    const driversIds = nearestDrivers.map(driver => driver._id!);
-    await this.websocketService.sendNotification(driversIds, {
-      message: 'A new trip request is available to take',
-      tripId: createdTrip._id!,
-      clientId: createdTrip.clientId!,
-      price: createdTrip.price!.toString(),
-    });
+    };
   }
 
   @authenticate({
@@ -210,9 +202,9 @@ export class TripController {
 
   @authenticate({
     strategy: 'auth',
-    options: [Permissions.AcceptTrip],
+    options: [Permissions.DriverAcceptTrip],
   })
-  @get('/trips/{id}/accept')
+  @get('/trips/{id}/driver-accept')
   @response(200, {
     description: 'Trip model instance',
     content: {
@@ -221,13 +213,68 @@ export class TripController {
       },
     },
   })
-  async acceptTrip(
+  async driverAcceptTrip(
     @param.path.string('id') id: string,
     @inject(SecurityBindings.USER) user: UserProfile,
   ) {
+    console.log('Driver accepts the trip');
     return this.tripRepository.updateById(id, {
       driverId: user.userId,
+      status: TripStatus.ASSIGNED,
     });
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTrip],
+  })
+  @post('/trips/client-accept')
+  @response(200, {
+    description: 'Trip model instance',
+  })
+  async clientAcceptTrip(
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(RequestTrip, {
+            title: 'RequestTrip',
+          }),
+        },
+      },
+    })
+    data: RequestTrip,
+  ) {
+    const nearestDrivers = await this.driverUbicationService.findNearestDrivers(
+      data.origin,
+    );
+    if (nearestDrivers.length === 0) {
+      throw new HttpErrors.BadRequest(
+        'There are no drivers near your point of origin.',
+      );
+    }
+    const {points: bestRoute, cost} = await this.pointService.findBestRoute(
+      data.origin,
+      data.destination,
+    );
+    const route = bestRoute.map(point => point.name).join(',');
+    const createdTrip = await this.tripRepository.create({
+      route,
+      status: TripStatus.PENDING,
+      clientId: user.userId,
+      price: +process.env.PRICE_PER_KM! * cost,
+    });
+    const driversIds = nearestDrivers.map(driver => driver._id!);
+    console.log('driversIds', driversIds);
+    await this.websocketService.sendNotification(driversIds, {
+      message: 'A new trip request is available to take',
+      route,
+      price: createdTrip.price!.toString(),
+      tripId: createdTrip._id!,
+      clientId: createdTrip.clientId!,
+    });
+    return {message: 'Finding driver'};
   }
 
   @authenticate({

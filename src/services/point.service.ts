@@ -1,6 +1,7 @@
 import {BindingScope, injectable} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import Graph from 'node-dijkstra';
+import {Point, PointRelations} from '../models';
 import {PointRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -26,14 +27,15 @@ export class PointService {
       path: string[];
       cost: number;
     };
-    const bestRoutePoints = await this.pointRepository.find({
-      where: {
-        _id: {inq: path as string[]},
-      },
-      fields: {
-        edges: false,
-      },
+    const promises: Promise<Point & PointRelations>[] = [];
+    path.forEach(point => {
+      promises.push(
+        this.pointRepository.findById(point, {
+          fields: {edges: false},
+        }),
+      );
     });
-    return {points: bestRoutePoints, cost};
+    const response = await Promise.all(promises);
+    return {points: response, cost};
   }
 }
