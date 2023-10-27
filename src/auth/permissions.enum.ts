@@ -75,5 +75,5 @@ export enum Permissions {
   UpdateNotification,
   DeleteNotification,
 
-  AcceptTrip,
+  DriverAcceptTrip,
 }
