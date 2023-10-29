@@ -225,6 +225,50 @@ export class TripCommentController {
     });
   }
 
+  @get('/trip-comments/by-driver/{driverId}')
+  @response(200, {
+    description: 'Array of TripComment model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(TripComment, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async getDriverComments(@param.path.string('driverId') driverId: string) {
+    return this.tripCommentRepository.find({
+      where: {
+        receiverId: driverId,
+      },
+      include: [
+        {
+          relation: 'publisher',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'receiver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
+    });
+  }
+
   @authenticate({
     strategy: 'auth',
     options: [Permissions.UpdateTripComment],

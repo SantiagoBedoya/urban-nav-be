@@ -100,6 +100,48 @@ export class UserController {
     strategy: 'auth',
     options: [Permissions.ListProfile],
   })
+  @get('/users/contacts')
+  @response(200, {
+    description: 'Logged user',
+    content: {'application/json': {schema: getModelSchemaRef(User)}},
+  })
+  async getMyContacts(@inject(SecurityBindings.USER) user: UserProfile) {
+    const currentUser = await this.userRepository.findById(user.userId);
+    return currentUser.contacts ?? [];
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListUser],
+  })
+  @patch('/users/contacts')
+  @response(204, {
+    description: 'User contacts PATCH success',
+  })
+  async updateMyContacts(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Contacts),
+        },
+      },
+    })
+    contacts: Contacts,
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+  ): Promise<void> {
+    const currentUser = await this.userRepository.findById(user.userId);
+    if (!user) {
+      throw new HttpErrors.NotFound('User not found');
+    }
+    currentUser.contacts = contacts.items;
+    await this.userRepository.updateById(user.userId, currentUser);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListProfile],
+  })
   @patch('/users/me')
   @response(204, {
     description: 'File to upload',
@@ -191,27 +233,6 @@ export class UserController {
 
   @authenticate({
     strategy: 'auth',
-    options: [Permissions.ListProfile],
-  })
-  @get('/users/{id}/contacts')
-  @response(200, {
-    description: 'User contacts model instance',
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(Contacts),
-      },
-    },
-  })
-  async findByIdContacts(@param.path.string('id') id: string) {
-    const user = await this.userRepository.findById(id);
-    if (!user) {
-      throw new HttpErrors.NotFound('User not found');
-    }
-    return user.contacts;
-  }
-
-  @authenticate({
-    strategy: 'auth',
     options: [Permissions.UpdateUser],
   })
   @patch('/users/{id}')
@@ -229,33 +250,6 @@ export class UserController {
     })
     user: User,
   ): Promise<void> {
-    await this.userRepository.updateById(id, user);
-  }
-
-  @authenticate({
-    strategy: 'auth',
-    options: [Permissions.ListUser],
-  })
-  @patch('/users/{id}/contacts')
-  @response(204, {
-    description: 'User contacts PATCH success',
-  })
-  async updateByIdContacts(
-    @param.path.string('id') id: string,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Contacts),
-        },
-      },
-    })
-    contacts: Contacts,
-  ): Promise<void> {
-    const user = await this.userRepository.findById(id);
-    if (!user) {
-      throw new HttpErrors.NotFound('User not found');
-    }
-    user.contacts = contacts.items;
     await this.userRepository.updateById(id, user);
   }
 
