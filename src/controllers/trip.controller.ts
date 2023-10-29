@@ -20,6 +20,7 @@ import {RequestTrip, Trip} from '../models';
 import {
   NotificationRepository,
   TripRepository,
+  UserRepository,
   VehicleRepository,
 } from '../repositories';
 import {
@@ -33,6 +34,8 @@ export class TripController {
   constructor(
     @repository(TripRepository)
     public tripRepository: TripRepository,
+    @repository(UserRepository)
+    public userRepository: UserRepository,
     @repository(VehicleRepository)
     public vehicleRepository: VehicleRepository,
     @repository(NotificationRepository)
@@ -147,6 +150,32 @@ export class TripController {
     user: UserProfile,
   ): Promise<Trip[]> {
     return this.tripRepository.find({
+      include: [
+        {
+          relation: 'client',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'driver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
       where: {
         or: [
           {
@@ -197,7 +226,34 @@ export class TripController {
     },
   })
   async findById(@param.path.string('id') id: string): Promise<Trip> {
-    return this.tripRepository.findById(id);
+    return this.tripRepository.findById(id, {
+      include: [
+        {
+          relation: 'client',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'driver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
+    });
   }
 
   @authenticate({
@@ -217,10 +273,21 @@ export class TripController {
     @param.path.string('id') id: string,
     @inject(SecurityBindings.USER) user: UserProfile,
   ) {
-    console.log('Driver accepts the trip');
-    return this.tripRepository.updateById(id, {
+    const trip = await this.tripRepository.findById(id);
+    if (!trip) {
+      throw new HttpErrors.NotFound('Trip not found');
+    }
+    const driver = await this.userRepository.findById(user.userId);
+    await this.tripRepository.updateById(id, {
       driverId: user.userId,
       status: TripStatus.ASSIGNED,
+    });
+    await this.websocketService.sendNotification([trip.clientId], {
+      message: `We found your driver!`,
+      firstName: driver.firstName,
+      lastName: driver.lastName,
+      email: driver.email,
+      photoURL: driver.photoURL ?? '',
     });
   }
 
@@ -274,7 +341,7 @@ export class TripController {
       tripId: createdTrip._id!,
       clientId: createdTrip.clientId!,
     });
-    return {message: 'Finding driver'};
+    return createdTrip;
   }
 
   @authenticate({
@@ -318,6 +385,18 @@ export class TripController {
         vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
       },
     );
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTrip],
+  })
+  @get('/trips/{id}/cancel')
+  @response(204, {
+    description: 'Cancel Trip',
+  })
+  async cancelTrip(@param.path.string('id') id: string) {
+    await this.tripRepository.deleteById(id);
   }
 
   @authenticate({
