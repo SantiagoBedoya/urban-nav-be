@@ -130,6 +130,101 @@ export class TripCommentController {
     });
   }
 
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListTripComment],
+  })
+  @get('/trip-comments/to-me')
+  @response(200, {
+    description: 'Array of TripComment model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(TripComment, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async findCommentsToMe(
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+  ) {
+    return this.tripCommentRepository.find({
+      where: {
+        receiverId: user.userId,
+      },
+      include: [
+        {
+          relation: 'publisher',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'receiver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  @get('/trip-comments/by-trip/{tripId}')
+  @response(200, {
+    description: 'Array of TripComment model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(TripComment, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async getTripComments(@param.path.string('tripId') tripId: string) {
+    return this.tripCommentRepository.find({
+      where: {
+        tripId: tripId,
+      },
+      include: [
+        {
+          relation: 'publisher',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'receiver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
+    });
+  }
+
   @get('/trip-comments/by-driver/{driverId}')
   @response(200, {
     description: 'Array of TripComment model instances',
@@ -147,6 +242,30 @@ export class TripCommentController {
       where: {
         receiverId: driverId,
       },
+      include: [
+        {
+          relation: 'publisher',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+        {
+          relation: 'receiver',
+          scope: {
+            fields: {
+              _id: true,
+              firstName: true,
+              lastName: true,
+              photoURL: true,
+            },
+          },
+        },
+      ],
     });
   }
 
