@@ -10,3 +10,5 @@ export * from './trip.controller';
 export * from './user.controller';
 export * from './vehicle.controller';
 export * from './user-vehicle.controller';
+export * from './trip-rating-user.controller';
+export * from './trip-rating-trip.controller';
