@@ -27,6 +27,7 @@ import {
   DriverUbicationService,
   PointService,
   SendgridService,
+  TwilioService,
   WebsocketService,
 } from '../services';
 
@@ -48,6 +49,8 @@ export class TripController {
     public sendgridService: SendgridService,
     @service(WebsocketService)
     public websocketService: WebsocketService,
+    @service(TwilioService)
+    private readonly twilioService: TwilioService,
   ) {}
 
   @authenticate({
@@ -371,9 +374,19 @@ export class TripController {
       throw new HttpErrors.NotFound('This driver does not have a vehicle');
     }
     let to = process.env.ADMIN_EMAIL!;
+    let toSms = '';
     if (trip.client.contacts && trip.client.contacts.length > 0) {
       to = trip.client.contacts[0].email;
+      toSms = trip.client.contacts[0].phone;
     }
+    const messageBody = `Emergency! Need immediate help."
+    passenger: ${trip.client.firstName} ${trip.client.lastName}
+    Route: ${trip.route}
+    Driver: ${trip.driver.firstName} ${trip.driver.lastName}
+    Vehicle: ${vehicle.brand} ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}
+    `;
+
+    await this.twilioService.sendSms(messageBody, toSms);
     await this.sendgridService.sendMail(
       'PANIC!',
       to,
