@@ -1,13 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {inject, service} from '@loopback/core';
-import {
-  Count,
-  CountSchema,
-  Filter,
-  FilterExcludingWhere,
-  Where,
-  repository,
-} from '@loopback/repository';
+import {Count, CountSchema, Where, repository} from '@loopback/repository';
 import {
   HttpErrors,
   Request,
@@ -184,8 +177,10 @@ export class UserController {
       },
     },
   })
-  async find(@param.filter(User) filter?: Filter<User>): Promise<User[]> {
-    return this.userRepository.find(filter);
+  async find(): Promise<User[]> {
+    return this.userRepository.find({
+      include: ['role'],
+    });
   }
 
   @authenticate({
@@ -224,11 +219,10 @@ export class UserController {
       },
     },
   })
-  async findById(
-    @param.path.string('id') id: string,
-    @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>,
-  ): Promise<User> {
-    return this.userRepository.findById(id, filter);
+  async findById(@param.path.string('id') id: string): Promise<User> {
+    return this.userRepository.findById(id, {
+      include: ['role'],
+    });
   }
 
   @authenticate({
@@ -251,6 +245,24 @@ export class UserController {
     user: User,
   ): Promise<void> {
     await this.userRepository.updateById(id, user);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.UpdateUser],
+  })
+  @get('/users/{id}/toggle-block')
+  @response(204, {
+    description: 'User GET success',
+  })
+  async toggleBlock(@param.path.string('id') id: string): Promise<void> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new HttpErrors.NotFound('user not found');
+    }
+    return this.userRepository.updateById(id, {
+      isBlocked: !user.isBlocked,
+    });
   }
 
   @authenticate({
