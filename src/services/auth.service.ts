@@ -77,6 +77,11 @@ export class AuthService {
     if (!existUser) {
       throw new HttpErrors.NotFound('User not found');
     }
+    if (existUser.isBlocked) {
+      throw new HttpErrors.BadRequest(
+        'You are blocked, please contact to adminstrator',
+      );
+    }
     const passwordMatched = await bcrypt.compare(
       credentials.password,
       existUser.password,

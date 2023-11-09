@@ -37,6 +37,12 @@ export class User extends Entity {
   password: string;
 
   @property({
+    type: 'boolean',
+    default: false,
+  })
+  isBlocked?: boolean;
+
+  @property({
     type: 'string',
   })
   photoURL?: string;
