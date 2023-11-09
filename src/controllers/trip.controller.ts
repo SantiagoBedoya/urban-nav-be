@@ -282,13 +282,18 @@ export class TripController {
       driverId: user.userId,
       status: TripStatus.ASSIGNED,
     });
-    await this.websocketService.sendNotification([trip.clientId], {
-      message: `We found your driver!`,
-      firstName: driver.firstName,
-      lastName: driver.lastName,
-      email: driver.email,
-      photoURL: driver.photoURL ?? '',
-    });
+    await this.websocketService.sendNotification(
+      [trip.clientId],
+      {
+        message: `We found your driver!`,
+        firstName: driver.firstName,
+        lastName: driver.lastName,
+        email: driver.email,
+        photoURL: driver.photoURL ?? '',
+        tripId: id,
+      },
+      'driverFounded',
+    );
   }
 
   @authenticate({
@@ -333,14 +338,17 @@ export class TripController {
       price: +process.env.PRICE_PER_KM! * cost,
     });
     const driversIds = nearestDrivers.map(driver => driver._id!);
-    console.log('driversIds', driversIds);
-    await this.websocketService.sendNotification(driversIds, {
-      message: 'A new trip request is available to take',
-      route,
-      price: createdTrip.price!.toString(),
-      tripId: createdTrip._id!,
-      clientId: createdTrip.clientId!,
-    });
+    await this.websocketService.sendNotification(
+      driversIds,
+      {
+        message: 'A new trip request is available to take',
+        route,
+        price: createdTrip.price!.toString(),
+        tripId: createdTrip._id!,
+        clientId: createdTrip.clientId!,
+      },
+      'newTrip',
+    );
     return createdTrip;
   }
 
@@ -419,6 +427,35 @@ export class TripController {
     trip: Trip,
   ): Promise<void> {
     await this.tripRepository.updateById(id, trip);
+    const currentTrip = await this.tripRepository.findById(id);
+
+    if (!currentTrip) {
+      throw new HttpErrors.NotFound('Trip not found');
+    }
+
+    const receiversIds = [currentTrip.clientId];
+
+    let message = '';
+
+    if (trip.status === TripStatus.CANCELLED) {
+      message =
+        'The trip was cancelled by the passenger, sorry for the inconvenience.';
+      receiversIds[0] = currentTrip.driverId;
+    } else if (trip.status === TripStatus.ACTIVE) {
+      message =
+        'The trip started now, remember you can activate panic at any time.';
+    } else {
+      message = 'The trip finished, thank you for choosing us.';
+    }
+
+    await this.websocketService.sendNotification(
+      receiversIds,
+      {
+        message,
+        newStatus: trip.status!,
+      },
+      `${trip.status?.toLowerCase()}Trip`,
+    );
   }
 
   @authenticate({
