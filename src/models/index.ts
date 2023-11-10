@@ -20,3 +20,4 @@ export * from './trip.model';
 export * from './user.model';
 export * from './validate-otp.model';
 export * from './vehicle.model';
+export * from './payment-method.model';
