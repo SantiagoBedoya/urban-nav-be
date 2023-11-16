@@ -6,10 +6,11 @@ export class WebsocketService {
   private wsURL: string = process.env.WS_URL!;
   constructor() {}
 
-  async sendNotification(recipients: string[], data: Record<string, string>) {
+  async sendNotification(recipients: string[], data: Record<string, string>, emitTopic: string) {
     return axios.post(this.wsURL + '/send-notification', {
       recipients,
       data,
+      emitTopic
     });
   }
 }
