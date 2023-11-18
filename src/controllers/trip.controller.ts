@@ -149,6 +149,10 @@ export class TripController {
     @inject(SecurityBindings.USER)
     user: UserProfile,
   ): Promise<Trip[]> {
+    if(user.rolId === process.env.ADMIN_ROLE_ID){
+      return this.tripRepository.find(
+      )
+    }
     return this.tripRepository.find({
       include: [
         {
