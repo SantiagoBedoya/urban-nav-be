@@ -19,6 +19,7 @@ import {TripStatus} from '../enums/trip-status.enum';
 import {RequestTrip, Trip} from '../models';
 import {
   NotificationRepository,
+  PaymentMethodRepository,
   TripRepository,
   UserRepository,
   VehicleRepository,
@@ -50,6 +51,8 @@ export class TripController {
     @service(WebsocketService)
     public websocketService: WebsocketService,
     @service(TwilioService)
+    public paymentMethodRepository: PaymentMethodRepository,
+    @repository(PaymentMethodRepository)
     private readonly twilioService: TwilioService,
   ) {}
 
@@ -401,6 +404,62 @@ export class TripController {
       process.env.EMAIL_PANIC_TEMPLATE_ID!,
       {
         passenger: `${trip.client.firstName} ${trip.client.lastName}`,
+        route: trip.route!,
+        driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
+        vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
+      },
+    );
+  }
+
+  //crear el recibo
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateReceipts],
+  })
+  @get('/trips/{id}/payTrip')
+  @response(200, {
+    description: 'Pay trip',
+  })
+  async payTrip(@param.path.string('id') id: string) {
+    console.log("here", id)
+    const trip = await this.tripRepository.findById(id, {
+      include: ['client', 'driver'],
+    });
+    if (!trip) {
+      throw new HttpErrors.NotFound('Trip not found');
+    }
+    if (trip.status !== TripStatus.ACTIVE) {
+      throw new HttpErrors.BadRequest('The trip must be active');
+    }
+
+    const paymehotd = await this.paymentMethodRepository.findOne({
+      where: {
+        userId: trip.client._id,
+      },
+    });
+    if (!paymehotd) {
+      throw new HttpErrors.NotFound('This client does not have a method of payment');
+    }
+    const vehicle = await this.vehicleRepository.findOne({
+      where: {
+        userId: trip.driver._id,
+      },
+    });
+    if (!vehicle) {
+      throw new HttpErrors.NotFound('This driver does not have a vehicle');
+    }
+    let to = process.env.ADMIN_EMAIL!;
+    to = trip.client.email;
+
+    await this.sendgridService.sendMail(
+      'receipt!',
+      to,
+      process.env.EMAIL_RECEIPT_TEMPLATE_ID!,
+      {
+        date: `${new Date()}`,
+        price:  `${trip.price}`,
+        passenger: `${trip.client.firstName} ${trip.client.lastName}`,
+       // paymentMethod: `${paymehotd.type} `,
         route: trip.route!,
         driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
         vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
