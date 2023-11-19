@@ -150,6 +150,7 @@ export class AuthService {
       return {
         userId: payload.userId,
         permissions: role.permissions,
+        rolId: role._id
       };
     } catch (err) {
       throw new HttpErrors.Unauthorized('Invalid token');
