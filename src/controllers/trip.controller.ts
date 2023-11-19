@@ -51,9 +51,9 @@ export class TripController {
     @service(WebsocketService)
     public websocketService: WebsocketService,
     @service(TwilioService)
-    public paymentMethodRepository: PaymentMethodRepository,
+    public twilioService: TwilioService,
     @repository(PaymentMethodRepository)
-    private readonly twilioService: TwilioService,
+    public paymentMethodRepository: PaymentMethodRepository,
   ) {}
 
   @authenticate({
@@ -385,10 +385,10 @@ export class TripController {
       throw new HttpErrors.NotFound('This driver does not have a vehicle');
     }
     let to = process.env.ADMIN_EMAIL!;
-    let toSms = '';
+    let toSms = '+57';
     if (trip.client.contacts && trip.client.contacts.length > 0) {
       to = trip.client.contacts[0].email;
-      toSms = trip.client.contacts[0].phone;
+      toSms = toSms + trip.client.contacts[0].phone;
     }
     const messageBody = `Emergency! Need immediate help."
     passenger: ${trip.client.firstName} ${trip.client.lastName}
@@ -411,35 +411,39 @@ export class TripController {
     );
   }
 
-  //crear el recibo
   @authenticate({
     strategy: 'auth',
     options: [Permissions.CreateReceipts],
   })
-  @get('/trips/{id}/payTrip')
+  @get('/trips/{id}/{idMethodPay}/payTrip')
   @response(200, {
     description: 'Pay trip',
   })
-  async payTrip(@param.path.string('id') id: string) {
-    console.log("here", id)
+  async payTrip(
+    @param.path.string('id') id: string,
+    @param.path.string('idMethodPay') idMethodPay: string | "payCash",
+  ) {
     const trip = await this.tripRepository.findById(id, {
       include: ['client', 'driver'],
     });
+
     if (!trip) {
       throw new HttpErrors.NotFound('Trip not found');
     }
-    if (trip.status !== TripStatus.ACTIVE) {
-      throw new HttpErrors.BadRequest('The trip must be active');
+
+    let paymentMethod;
+    if (idMethodPay === "payCash") {
+      paymentMethod = {type: 'Pay cash'};
+    } else {
+      paymentMethod = await this.paymentMethodRepository.findById(idMethodPay);
     }
 
-    const paymehotd = await this.paymentMethodRepository.findOne({
-      where: {
-        userId: trip.client._id,
-      },
-    });
-    if (!paymehotd) {
-      throw new HttpErrors.NotFound('This client does not have a method of payment');
+    if (!paymentMethod) {
+      throw new HttpErrors.NotFound(
+        'This client does not have a method of payment',
+      );
     }
+
     const vehicle = await this.vehicleRepository.findOne({
       where: {
         userId: trip.driver._id,
@@ -452,14 +456,14 @@ export class TripController {
     to = trip.client.email;
 
     await this.sendgridService.sendMail(
-      'receipt!',
+      'receipt',
       to,
       process.env.EMAIL_RECEIPT_TEMPLATE_ID!,
       {
-        date: `${new Date()}`,
-        price:  `${trip.price}`,
+        date: `${new Date().toDateString()}`,
+        price: `${trip.price}`,
         passenger: `${trip.client.firstName} ${trip.client.lastName}`,
-       // paymentMethod: `${paymehotd.type} `,
+        paymentMethod: `${paymentMethod.type} `,
         route: trip.route!,
         driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
         vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
