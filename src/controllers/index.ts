@@ -12,3 +12,5 @@ export * from './vehicle.controller';
 export * from './user-vehicle.controller';
 export * from './trip-rating-user.controller';
 export * from './trip-rating-trip.controller';
+export * from './payment-method.controller';
+export * from './payment-method-user.controller';

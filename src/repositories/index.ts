@@ -10,3 +10,4 @@ export * from './trip.repository';
 export * from './user.repository';
 export * from './vehicle.repository';
 export * from './edge.repository';
+export * from './payment-method.repository';

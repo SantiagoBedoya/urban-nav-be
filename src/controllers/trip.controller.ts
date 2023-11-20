@@ -19,6 +19,7 @@ import {TripStatus} from '../enums/trip-status.enum';
 import {RequestTrip, Trip} from '../models';
 import {
   NotificationRepository,
+  PaymentMethodRepository,
   TripRepository,
   UserRepository,
   VehicleRepository,
@@ -27,6 +28,7 @@ import {
   DriverUbicationService,
   PointService,
   SendgridService,
+  TwilioService,
   WebsocketService,
 } from '../services';
 
@@ -48,6 +50,10 @@ export class TripController {
     public sendgridService: SendgridService,
     @service(WebsocketService)
     public websocketService: WebsocketService,
+    @service(TwilioService)
+    public twilioService: TwilioService,
+    @repository(PaymentMethodRepository)
+    public paymentMethodRepository: PaymentMethodRepository,
   ) {}
 
   @authenticate({
@@ -382,15 +388,85 @@ export class TripController {
       throw new HttpErrors.NotFound('This driver does not have a vehicle');
     }
     let to = process.env.ADMIN_EMAIL!;
+    let toSms = '+57';
     if (trip.client.contacts && trip.client.contacts.length > 0) {
       to = trip.client.contacts[0].email;
+      toSms = toSms + trip.client.contacts[0].phone;
     }
+    const messageBody = `Emergency! Need immediate help."
+    passenger: ${trip.client.firstName} ${trip.client.lastName}
+    Route: ${trip.route}
+    Driver: ${trip.driver.firstName} ${trip.driver.lastName}
+    Vehicle: ${vehicle.brand} ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}
+    `;
+
+    await this.twilioService.sendSms(messageBody, toSms);
     await this.sendgridService.sendMail(
       'PANIC!',
       to,
       process.env.EMAIL_PANIC_TEMPLATE_ID!,
       {
         passenger: `${trip.client.firstName} ${trip.client.lastName}`,
+        route: trip.route!,
+        driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
+        vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
+      },
+    );
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.CreateReceipts],
+  })
+  @get('/trips/{id}/{idMethodPay}/payTrip')
+  @response(200, {
+    description: 'Pay trip',
+  })
+  async payTrip(
+    @param.path.string('id') id: string,
+    @param.path.string('idMethodPay') idMethodPay: string | "payCash",
+  ) {
+    const trip = await this.tripRepository.findById(id, {
+      include: ['client', 'driver'],
+    });
+
+    if (!trip) {
+      throw new HttpErrors.NotFound('Trip not found');
+    }
+
+    let paymentMethod;
+    if (idMethodPay === "payCash") {
+      paymentMethod = {type: 'Pay cash'};
+    } else {
+      paymentMethod = await this.paymentMethodRepository.findById(idMethodPay);
+    }
+
+    if (!paymentMethod) {
+      throw new HttpErrors.NotFound(
+        'This client does not have a method of payment',
+      );
+    }
+
+    const vehicle = await this.vehicleRepository.findOne({
+      where: {
+        userId: trip.driver._id,
+      },
+    });
+    if (!vehicle) {
+      throw new HttpErrors.NotFound('This driver does not have a vehicle');
+    }
+    let to = process.env.ADMIN_EMAIL!;
+    to = trip.client.email;
+
+    await this.sendgridService.sendMail(
+      'receipt',
+      to,
+      process.env.EMAIL_RECEIPT_TEMPLATE_ID!,
+      {
+        date: `${new Date().toDateString()}`,
+        price: `${trip.price}`,
+        passenger: `${trip.client.firstName} ${trip.client.lastName}`,
+        paymentMethod: `${paymentMethod.type} `,
         route: trip.route!,
         driver: `${trip.driver.firstName} ${trip.driver.lastName}`,
         vehicleInfo: `${vehicle.brand}: ${vehicle.model}, ${vehicle.year} - ${vehicle.licensePlate}`,
