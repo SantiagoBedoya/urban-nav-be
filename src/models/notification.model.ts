@@ -24,10 +24,9 @@ export class Notification extends Entity {
   description: string;
 
   @property({
-    type: 'string',
-    required: true,
+    type: 'string'
   })
-  link: string;
+  link?: string;
 
   @property({
     type: 'string',
