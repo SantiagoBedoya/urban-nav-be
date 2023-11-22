@@ -1,4 +1,5 @@
 import {authenticate} from '@loopback/authentication';
+import {inject} from '@loopback/core';
 import {
   Count,
   CountSchema,
@@ -18,6 +19,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {SecurityBindings, UserProfile} from '@loopback/security';
 import {Permissions} from '../auth/permissions.enum';
 import {Notification} from '../models';
 import {NotificationRepository} from '../repositories';
@@ -26,7 +28,7 @@ export class NotificationController {
   constructor(
     @repository(NotificationRepository)
     public notificationRepository: NotificationRepository,
-  ) {}
+  ) { }
 
   @authenticate({
     strategy: 'auth',
@@ -132,6 +134,36 @@ export class NotificationController {
     filter?: FilterExcludingWhere<Notification>,
   ): Promise<Notification> {
     return this.notificationRepository.findById(id, filter);
+  }
+
+  @authenticate({
+    strategy: 'auth',
+    options: [Permissions.ListNotification],
+  })
+  @get('/notifications/to-me')
+  @response(200, {
+    description: 'Array of Notifications model instances',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Notification, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async findNotificationsToMe(
+    @inject(SecurityBindings.USER)
+    user: UserProfile,
+  ) {
+    return this.notificationRepository.find({
+      where: {
+        userId: user.userId,
+      },
+      include: [
+        // Incluye otras relaciones si es necesario
+      ],
+    });
   }
 
   @authenticate({
